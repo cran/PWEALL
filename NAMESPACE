@@ -1,0 +1,27 @@
+exportPattern("^[[:alpha:]]+")
+useDynLib(PWEALL)
+export(innercov)
+export(innervar)
+export(ovbeta)
+export(overallcov)
+export(overallvar)
+export(pwe)
+export(pwecx)
+export(pwecxpwu)
+export(pwecxpwufindt)
+export(pwefvplus)
+export(pwefv2)
+export(pwepower)
+export(pwepowerfindt)
+export(pwesim)
+export(pwu)
+export(qpwe)
+export(rpwe)
+export(rpwecx)
+export(rpwu)
+import("survival")
+importFrom("stats", "pnorm", "qnorm", "rbinom", "runif", "residuals")
+
+
+
+

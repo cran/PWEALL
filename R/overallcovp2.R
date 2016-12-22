@@ -1,0 +1,153 @@
+############################################################################################################################
+#   A function to calculate covariance of LR and Cox
+#     account for delayed treatment, discontinued treatment and non-uniform entry
+#   version 1.0 (08/17/2016)
+############################################################################################################################
+
+overallcovp2<-function(tfix=2.0,tfix0=1.0,taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur),pi1=0.5,
+                       rate11=c(1,0.5),rate21=rate11,rate31=c(0.7,0.4),
+                       rate41=rate21,rate51=rate51,ratec1=c(0.5,0.6),
+                       rate10=rate11,rate20=rate10,rate30=rate31,
+                       rate40=rate20,rate50=rate20,ratec0=ratec1,
+                       tchange=c(0,1),type1=1,type0=1,
+                       eps=1.0e-2,veps=1.0e-2,beta=0,beta0=0){
+  ##tfix: the time point where the overall log hazard ratio beta is calculated
+  ##tfix0: the time point where the overall log hazard ratio beta0 is calculated
+  ##pi1: proportion of treatment group
+  ##rate11: hazard before dilution for the treatment group
+  ##rate21: hazard after dilution for the treatment group
+  ##rate31: hazard for treatment discontinuation for the treatment group
+  ##ratec1: hazard for loss to follow-up for the treatment group
+  ##rate10: hazard before dilution for the control group
+  ##rate20: hazard after dilution for the control group
+  ##rate30: hazard for treatment discontinuation for the control group
+  ##ratec0: hazard for loss to follow-up for the control group
+  ##tchange: points at which hazard changes
+
+  ######Part A################################################################################
+  ratemax<-max(c(max(c(rate21,rate20)),max(c(rate11+rate31,rate10+rate30)),max(c(ratec1,ratec0)),max(abs(c(rate11+rate31-rate21,rate10+rate30-rate20)))))
+  err<-veps/ratemax
+  tmax<-max(c(tfix,tchange,taur))+err
+
+  nr<-length(rate11)
+  tplus<-rep(0,nr)
+  tplus[nr]<-tmax
+  if (nr>1) tplus[-nr]<-tchange[-1]
+
+  nn<-rep(1,nr)
+  nn[1]<-ceiling((tplus[1]-tchange[1])/err)
+  atchange<-rep(0,nn[1])
+  atchange<-seq(tchange[1],tplus[1],by=(tplus[1]-tchange[1])/nn[1])[1:nn[1]]
+  if (nr>=2){
+    for (i in 2:nr){
+      nn[i]<-ceiling((tplus[i]-tchange[i])/err)
+      atchange<-c(atchange,seq(tchange[i],tplus[i],by=(tplus[i]-tchange[i])/nn[i])[1:nn[i]])
+    }
+  }
+  ###############################################################################################
+
+  atchange1<-sort(unique(c(atchange,tfix0),fromLast=T))
+  aind<-(atchange1[-1]-atchange1[-length(atchange1)]>err/10)
+  ats<-c(0,atchange1[-1][aind==1])
+  anr<-length(ats)+1
+  atplus<-rep(0,anr)
+  #atplus[anr]<-tmax
+  atplus[anr]<-tmax+0.1*err
+  atplus[-anr]<-ats
+  nplus<-length(atplus)
+
+  #anr<-length(atchange1)+1
+  #atplus<-rep(0,anr)
+  #atplus[anr]<-tmax
+  #atplus[anr]<-tmax+0.1*err
+  #atplus[-anr]<-atchange1
+
+  covbeta2<-covbeta3<-covbeta4<-EA2<-0.0
+  if (sum(atplus<(tfix0-err/10))>0){
+    ats<-atplus[atplus<(tfix0-err/10)]
+    atsupp<-c(ats,tfix0)
+    nsupp<-length(atsupp)
+    BigK1<-pwecxpwuforvar(tfix=tfix0,t=atsupp,taur=taur,u=u,ut=ut,
+          rate1=rate11,rate2=rate21,rate3=rate31,
+          rate4=rate41,rate5=rate51,ratec=ratec1,
+          tchange=tchange,type=type1,eps=eps)
+    BigK0<-pwecxpwuforvar(tfix=tfix0,t=atsupp,taur=taur,u=u,ut=ut,
+          rate1=rate10,rate2=rate20,rate3=rate30,
+          rate4=rate40,rate5=rate50,ratec=ratec0,
+          tchange=tchange,type=type0,eps=eps)
+    dk1<-BigK1$f0[-1]-BigK1$f0[-nsupp]
+    dk0<-BigK0$f0[-1]-BigK0$f0[-nsupp]
+    tk1<-(BigK1$f1[-1]-BigK1$f1[-nsupp])/dk1
+    tk0<-(BigK0$f1[-1]-BigK0$f1[-nsupp])/dk0
+
+
+    ST11<-pwecx(t=tk1,rate1=rate11,rate2=rate21,rate3=rate31,
+          rate4=rate41,rate5=rate51,tchange=tchange,type=type1,eps=eps)$surv
+    ST10<-pwecx(t=tk1,rate1=rate10,rate2=rate20,rate3=rate30,
+          rate4=rate40,rate5=rate50,tchange=tchange,type=type0,eps=eps)$surv
+    SC11<-pwe(t=tk1,rate=ratec1,tchange=tchange)$surv
+    SC10<-pwe(t=tk1,rate=ratec0,tchange=tchange)$surv
+
+    ST01<-pwecx(t=tk0,rate1=rate11,rate2=rate21,rate3=rate31,
+          rate4=rate41,rate5=rate51,tchange=tchange,type=type1,eps=eps)$surv
+    ST00<-pwecx(t=tk0,rate1=rate10,rate2=rate20,rate3=rate30,
+          rate4=rate40,rate5=rate50,tchange=tchange,type=type0,eps=eps)$surv
+    SC01<-pwe(t=tk0,rate=ratec1,tchange=tchange)$surv
+    SC00<-pwe(t=tk0,rate=ratec0,tchange=tchange)$surv
+
+    bb1<-(1-pi1)*ST10*SC10
+    bb0<-(1-pi1)*ST00*SC00
+
+    aa1<-pi1*exp(beta)*ST11*SC11
+    aa0<-pi1*exp(beta)*ST01*SC01
+    aa10<-pi1*exp(beta0)*ST11*SC11
+    aa00<-pi1*exp(beta0)*ST01*SC01
+    r1bs<-aa1+bb1
+    r0bs<-aa0+bb0
+    r1bs0<-aa10+bb1
+    r0bs0<-aa00+bb0
+    q1bs<-aa1/r1bs
+    q0bs<-aa0/r0bs
+    q1bs0<-aa10/r1bs0
+    q0bs0<-aa00/r0bs0
+
+    ak1<-innervar(t=tk1,taur=taur,u=u,ut=ut,pi1=pi1,
+        rate11=rate11,rate21=rate21,rate31=rate31,
+        rate41=rate41,rate51=rate51,ratec1=ratec1,
+        rate10=rate10,rate20=rate20,rate30=rate30,
+        rate40=rate40,rate50=rate50,ratec0=ratec0,
+        tchange=tchange,type1=type1,type0=type0,
+        eps=eps,veps=veps,beta=beta)
+    ak0<-innervar(t=tk0,taur=taur,u=u,ut=ut,pi1=pi1,
+        rate11=rate11,rate21=rate21,rate31=rate31,
+        rate41=rate41,rate51=rate51,ratec1=ratec1,
+        rate10=rate10,rate20=rate20,rate30=rate30,
+        rate40=rate40,rate50=rate50,ratec0=ratec0,
+        tchange=tchange,type1=type1,type0=type0,
+        eps=eps,veps=veps,beta=beta)
+
+    bk1<-innercov(tupp=tk1+(tfix-tfix0),tlow=tk1,taur=taur,u=u,ut=ut,pi1=pi1,
+                  rate11=rate11,rate21=rate21,rate31=rate31,
+                  rate41=rate41,rate51=rate51,ratec1=ratec1,
+                  rate10=rate10,rate20=rate20,rate30=rate30,
+                  rate40=rate40,rate50=rate50,ratec0=ratec0,
+                  tchange=tchange,type1=type1,type0=type0,
+                  eps=eps,veps=veps,beta=beta)
+    bk0<-innercov(tupp=tk0+(tfix-tfix0),tlow=tk0,taur=taur,u=u,ut=ut,pi1=pi1,
+                  rate11=rate11,rate21=rate21,rate31=rate31,
+                  rate41=rate41,rate51=rate51,ratec1=ratec1,
+                  rate10=rate10,rate20=rate20,rate30=rate30,
+                  rate40=rate40,rate50=rate50,ratec0=ratec0,
+                  tchange=tchange,type1=type1,type0=type0,
+                  eps=eps,veps=veps,beta=beta)
+
+    covbeta2<-pi1*sum((1-q1bs)*(1-q1bs0)*dk1)+(1-pi1)*sum(q0bs*q0bs0*dk0)
+    covbeta3<-pi1*sum(bk1$qf1*q1bs0/r1bs0*dk1)+(1-pi1)*sum(bk0$qf1*q0bs0/r0bs0*dk0)
+    covbeta3<-covbeta3-exp(beta0)*pi1*sum(bk1$qf2*(1-q1bs0)/r1bs0*dk1)-exp(beta0)*(1-pi1)*sum(bk0$qf2*(1-q0bs0)/r0bs0*dk0)
+    covbeta4<-pi1*sum(ak1$qf1*q1bs0*(1-q1bs0)*dk1)-(1-pi1)*sum(ak0$qf1*q0bs0^2*dk0)
+    covbeta4<-covbeta4-exp(beta)*pi1*sum(ak1$qf2*(1-q1bs0)^2*dk1)+exp(beta)*(1-pi1)*sum(ak0$qf2*q0bs0*(1-q0bs0)*dk0)
+    EA2<-pi1*sum((1-q1bs0)*dk1)-(1-pi1)*sum(q0bs0*dk0)
+  }
+  cov234<-covbeta2+covbeta3+covbeta4
+  list(cov234=cov234,covbeta2=covbeta2,covbeta3=covbeta3,covbeta4=covbeta4,EA2=EA2)
+}
