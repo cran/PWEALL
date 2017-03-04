@@ -24,5 +24,6 @@ pwecxpwufindt<-function(target=400,ntotal=1000,taur=5,u=c(1/taur,1/taur),ut=c(ta
     ieps<-abs(tau1-tau0)
     tau0<-tau1
   }
-  list(tau1=tau1,eps=ieps,iter=iter)
+  tvar<-target*(ntotal-target)/ntotal^2/fprime^2
+  list(tau1=tau1,tvar=tvar,eps=ieps,iter=iter)
 }

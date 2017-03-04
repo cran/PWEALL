@@ -30,8 +30,11 @@ ovbeta<-function(tfix=2.0,taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur),pi1=0.5,
   ##tchange: points at which hazard changes
 
   ######Part A################################################################################
-  ratemax<-max(c(max(c(rate21,rate20)),max(c(rate11+rate31,rate10+rate30)),max(c(ratec1,ratec0)),max(abs(c(rate11+rate31-rate21,rate10+rate30-rate20)))))
-  err<-veps/ratemax
+  #ratemax<-max(c(max(c(rate21,rate20)),max(c(rate11+rate31,rate10+rate30)),max(c(ratec1,ratec0)),max(abs(c(rate11+rate31-rate21,rate10+rate30-rate20)))))
+  #Changed 3/2/2017 so that ratemax won't be too big or too small
+  ratemax<-max(abs(rate11-rate10))+max(abs(rate21-rate20))+max(abs(rate31-rate30))+max(abs(rate41-rate40))+max(abs(rate51-rate50))+max(abs(ratec1-ratec0)) #Changed 3/1/2017 so that ratemax won't be too big
+  rateb<-max(0.01,min(ratemax,1))
+  err<-veps/rateb
   tmax<-max(c(tfix,tchange,taur))+err
 
   nr<-length(rate11)
@@ -66,8 +69,15 @@ ovbeta<-function(tfix=2.0,taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur),pi1=0.5,
   BigK0<-pwecxpwuforvar(tfix=tfix,t=atsupp,taur=taur,u=u,ut=ut,rate1=rate10,rate2=rate20,rate3=rate30,rate4=rate40,rate5=rate50,ratec=ratec0,tchange=tchange,type=type0,eps=eps)
   dk1<-BigK1$f0[-1]-BigK1$f0[-nsupp]
   dk0<-BigK0$f0[-1]-BigK0$f0[-nsupp]
-  tk1<-(BigK1$f1[-1]-BigK1$f1[-nsupp])/dk1
-  tk0<-(BigK0$f1[-1]-BigK0$f1[-nsupp])/dk0
+  ###12/22/2016
+  #tk1<-(BigK1$f1[-1]-BigK1$f1[-nsupp])/dk1
+  #tk0<-(BigK0$f1[-1]-BigK0$f1[-nsupp])/dk0
+  ###3/1/2017
+  adk1<-(dk1>1.0e-08)
+  adk0<-(dk0>1.0e-08)
+  tk1<-tk0<-atsupp[-nsupp]
+  tk1[adk1==1]<-(BigK1$f1[-1]-BigK1$f1[-nsupp])[adk1==1]/dk1[adk1==1]
+  tk0[adk0==1]<-(BigK0$f1[-1]-BigK0$f1[-nsupp])[adk0==1]/dk0[adk0==1]
   ST11<-pwecx(t=tk1,rate1=rate11,rate2=rate21,rate3=rate31,rate4=rate41,rate5=rate51,tchange=tchange,type=type1,eps=eps)$surv
   ST10<-pwecx(t=tk1,rate1=rate10,rate2=rate20,rate3=rate30,rate4=rate40,rate5=rate50,tchange=tchange,type=type0,eps=eps)$surv
   SC11<-pwe(t=tk1,rate=ratec1,tchange=tchange)$surv

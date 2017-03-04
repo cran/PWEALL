@@ -14,13 +14,15 @@ pwecx<-function(t=seq(0,10,by=0.5),rate1=c(1,0.5),rate2=rate1,
   ##rate4: additional hazard after crossover
   ##rate5: additional hazard after crossover
   ##type: type of crossover
+  
   nt<-length(t)
+  r1<-rate1;r2<-rate2;r3<-rate3;r4<-rate4;r5<-rate5
   temp<-hazard<-cumhazard<-density<-dist<-surv<-rep(0,nt)
   if (type==1){
-    temp<-pwefv2(t=t,rate1=rate3,rate2=(rate1+rate3-rate2),tchange=tchange,eps=eps)$f0
-    a1<-pwe(t=t,rate=rate1,tchange=tchange)
-    a2<-pwe(t=t,rate=rate2,tchange=tchange)
-    a13<-pwe(t=t,rate=(rate1+rate3),tchange=tchange)
+    temp<-pwefv2(t=t,rate1=r3,rate2=(r1+r3-r2),tchange=tchange,eps=eps)$f0
+    a1<-pwe(t=t,rate=r1,tchange=tchange)
+    a2<-pwe(t=t,rate=r2,tchange=tchange)
+    a13<-pwe(t=t,rate=(r1+r3),tchange=tchange)
 
     surv<-a2$surv*temp+a13$surv
     dist<-1-surv
@@ -29,20 +31,17 @@ pwecx<-function(t=seq(0,10,by=0.5),rate1=c(1,0.5),rate2=rate1,
     hazard<-density/surv
   }
   else if (type==2){
-    r6<-rep(0,length(rate1))+0.00000001;r4<-r5<-rate2
-    tem<-tem1<-temp
-    tem<-pwefvplus(t=t,rate1=rate1,rate2=rate2,rate3=rate3,rate4=r4,rate5=r5,rate6=r6,tchange=tchange,type=type,eps=eps)$f0
-    temp<-pwefv2(t=t,rate1=rate3,rate2=(rate1+rate3),tchange=tchange,eps=eps)$f0
-    tem1<-temp-tem
-    a1<-pwe(t=t,rate=rate1,tchange=tchange)
-    a2<-pwe(t=t,rate=rate2,tchange=tchange)
-    a13<-pwe(t=t,rate=(rate1+rate3),tchange=tchange)
+    txone<-rep(1,length(tchange))
+    temp<-fourhr(t=t,rate1=r3,rate2=(r1+r3),rate3=r2,rate4=r2,tchange=tchange,eps=eps)$fx
+    temp1<-fourhr(t=t,rate1=r3,rate2=(r1+r3),rate3=txone,rate4=r2,tchange=tchange,eps=eps)$fx
+    a1<-pwe(t=t,rate=r1,tchange=tchange)
+    a13<-pwe(t=t,rate=(r1+r3),tchange=tchange)
 
-    surv<-tem1+a13$surv
+    surv<-a13$surv+temp1
     dist<-1-surv
-    density<-a1$hazard*a13$surv ##this is wrong
+    density<-a1$hazard*a13$surv+temp
     cumhazard<--log(surv)
-    hazard<-density/surv ##this is wrong
+    hazard<-density/surv
   }
   list(hazard=hazard, cumhazard=cumhazard,density=density,dist=dist,surv=surv)
 }

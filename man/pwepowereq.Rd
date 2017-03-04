@@ -1,22 +1,22 @@
-\name{pwepower}
-\alias{pwepower}
-\title{Calculating the powers of various the test statistics for superiority trials}
+\name{pwepowereq}
+\alias{pwepowereq}
+\title{Calculating the powers of various the test statistics for equivalence trials}
 \description{This will calculate the powers for the test statistics accouting for staggered entry, delayed treatment effect,  treatment crossover and loss to follow-up.}
 \usage{
-pwepower(t=seq(0.1,3,by=0.5),alpha=0.05,twosided=1,taur=1.2,
-             u=c(1/taur,1/taur),ut=c(taur/2,taur),pi1=0.5,
+pwepowereq(t=seq(0.1,3,by=0.5),uppermargin=1.3,lowermargin=1/uppermargin,
+           alpha=0.05,taur=1.2,u=c(1/taur,1/taur),ut=c(taur/2,taur),pi1=0.5,
              rate11=c(1,0.5),rate21=rate11,rate31=c(0.7,0.4),
              rate41=rate21,rate51=rate21,ratec1=c(0.5,0.6),
              rate10=rate11,rate20=rate10,rate30=rate31,
              rate40=rate20,rate50=rate20,ratec0=c(0.6,0.5),
-             tchange=c(0,1),type1=1,type0=1,eps=1.0e-2,
-             veps=1.0e-2,epsbeta=1.0e-04,iterbeta=25,
-             n=1000)
+             tchange=c(0,1),type1=1,type0=1,eps=1.0e-2,veps=1.0e-2,
+             epsbeta=1.0e-4,iterbeta=25,n=1000)
 }
 \arguments{
   \item{t}{a vector of time points at which power is calculated, \code{t} must be positive}
+  \item{uppermargin}{the upper margin for the hazard ratio}
+  \item{lowermargin}{the lower margin for the hazard ratio}
   \item{alpha}{type-1 error rate}
-  \item{twosided}{twosided test or not}
   \item{taur}{Recruitment time}
   \item{u}{Piecewise constant recuitment rate}
   \item{ut}{Recruitment intervals}
@@ -45,7 +45,7 @@ pwepower(t=seq(0.1,3,by=0.5),alpha=0.05,twosided=1,taur=1.2,
 \details{
 The hazard functions corresponding to \code{rate11},...,\code{rate51},\code{ratec1}, \code{rate10},...,\code{rate50},\code{ratec0} are all piecewise constant function taking the form  \eqn{\lambda(t)=\sum_{j=1}^m \lambda_j I(t_{j-1}\le t<t_j)}, where \eqn{\lambda_1,\ldots,\lambda_m} are the corresponding elements of the rates and \eqn{t_0,\ldots,t_{m-1}} are the corresponding elements of \cite{tchange}, \eqn{t_m=\infty}. Note that all the rates must have the same \code{tchange}.
 }
-\value{\item{power}{powers for various test statistics. First column is for log-rank, second column is for Cox model and the third column is for log-rank with robust variance estimate}
+\value{\item{power}{powers for cox model. First column is the more accurate power, second column is the power assuming the Fisher information equal to the varaince of beta}
 }
 \references{
 Luo, et al. (2017)
@@ -53,7 +53,7 @@ Luo, et al. (2017)
 \author{Xiaodong Luo}
 \note{Version 1.0 (7/19/2016)}
 \seealso{\code{\link{pwe}},\code{\link{rpwe}},\code{\link{qpwe}},\code{\link{ovbeta}},\code{\link{innervar}},
-         \code{\link{pwepowerni}},\code{\link{pwepowereq}}}
+         \code{\link{pwepower}},\code{\link{pwepowerni}}}
 \examples{
 t<-seq(3,6,by=1)
 taur<-1.2
@@ -69,17 +69,20 @@ r20<-r10
 r30<-c(0.02,0.01)
 r40<-r50<-r20
 rc0<-c(0.02,0.01)
-getpower<-pwepower(t=t,alpha=0.05,twosided=1,taur=taur,u=u,ut=ut,pi1=0.5,
-                   rate11=r11,rate21=r21,rate31=r31,rate41=r41,rate51=r51,ratec1=rc1,
-                   rate10=r10,rate20=r20,rate30=r30,rate40=r40,rate50=r50,ratec0=rc0,
-                   tchange=c(0,1),type1=1,type0=1,n=1000)
+getpowereq<-pwepowereq(t=t,uppermargin=1.3,lowermargin=0.8,alpha=0.05,taur=taur,
+            u=u,ut=ut,pi1=0.5,rate11=r11,rate21=r21,rate31=r31,
+            rate41=r41,rate51=r51,ratec1=rc1,
+            rate10=r10,rate20=r20,rate30=r30,rate40=r40,rate50=r50,ratec0=rc0,
+            tchange=c(0,1),type1=1,type0=1,n=1000)
 ###powers at each time point
-cbind(t,getpower$power[,1:3])
+cbind(t,getpowereq$power[,1:3])
 }
 \keyword{piecewise exponential}
 \keyword{power}
 \keyword{piecewise uniform}
 \keyword{delayed treatment effect}
 \keyword{treatment crossover}
+\keyword{equivalence}
+
 
 

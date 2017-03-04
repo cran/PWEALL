@@ -42,7 +42,8 @@ pwecxpwufindt(target=400,ntotal=1000,taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur)
 \details{
 The hazard functions corresponding to \code{rate11},...,\code{rate51},\code{ratec1}, \code{rate10},...,\code{rate50},\code{ratec0} are all piecewise constant function taking the form  \eqn{\lambda(t)=\sum_{j=1}^m \lambda_j I(t_{j-1}\le t<t_j)}, where \eqn{\lambda_1,\ldots,\lambda_m} are the corresponding elements of the rates and \eqn{t_0,\ldots,t_{m-1}} are the corresponding elements of \cite{tchange}, \eqn{t_m=\infty}. Note that all the rates must have the same \code{tchange}.
 }
-\value{\item{tau1}{the calculated timeline}
+\value{\item{t1}{the calculated timeline}
+       \item{tvar}{the true variance of the timeline estimator}
        \item{eps}{final tolerance}
        \item{iter}{Number of iterations performed}
 }
@@ -51,7 +52,7 @@ Luo, et al. (2017)
 }
 \author{Xiaodong Luo}
 \note{Version 1.0 (7/19/2016)}
-\seealso{\code{\link{pwe}},\code{\link{rpwe}},\code{\link{qpwe}}}
+\seealso{\code{\link{pwe}},\code{\link{rpwe}},\code{\link{qpwe}},\code{\link{instudyfindt}}}
 \examples{
 target<-400
 ntotal<-2000
@@ -73,7 +74,7 @@ gettimeline<-pwecxpwufindt(target=target,ntotal=ntotal,
                 rate11=r11,rate21=r21,rate31=r31,rate41=r41,rate51=r51,ratec1=rc1,
                 rate10=r10,rate20=r20,rate30=r30,rate40=r40,rate50=r50,ratec0=rc0,
                 tchange=c(0,1),type1=1,type0=1,eps=1.0e-2,init=taur,epsilon=0.000001,maxiter=100)
-gettimeline$tau1
+gettimeline$t1
 }
 \keyword{piecewise exponential}
 \keyword{timeline}
