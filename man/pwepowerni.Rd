@@ -9,7 +9,8 @@ pwepowerni(t=seq(0.1,3,by=0.5),nimargin=1.3,alpha=0.05,twosided=0,taur=1.2,
            rate41=rate21,rate51=rate21,ratec1=c(0.5,0.6),
            rate10=rate11,rate20=rate10,rate30=rate31,
            rate40=rate20,rate50=rate20,ratec0=c(0.6,0.5),
-           tchange=c(0,1),type1=1,type0=1,eps=1.0e-2,veps=1.0e-2,
+           tchange=c(0,1),type1=1,type0=1,
+           rp21=0.5,rp20=0.5,eps=1.0e-2,veps=1.0e-2,
            epsbeta=1.0e-4,iterbeta=25,n=1000)
 }           
 \arguments{
@@ -36,6 +37,8 @@ pwepowerni(t=seq(0.1,3,by=0.5),nimargin=1.3,alpha=0.05,twosided=0,taur=1.2,
   \item{tchange}{A strictly increasing sequence of time points at which the event rates changes. The first element of tchange                 must be zero. It must have the same length as \code{rate11}, \code{rate21}, \code{rate31}, etc.}
   \item{type1}{Type of crossover in the treatment group}
   \item{type0}{Type of crossover in the control group}
+  \item{rp21}{re-randomization prob in the treatment group}
+  \item{rp20}{re-randomization prob in the control group}
   \item{eps}{error tolerence}
   \item{veps}{error tolenrence for calculating variance}
   \item{epsbeta}{error tolerance for calculating overall log HR}

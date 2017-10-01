@@ -9,6 +9,7 @@ overallcovp1(tfix=2.0,tfix0=1.0,taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur),pi1=
                     rate10=rate11,rate20=rate10,rate30=rate31,
                     rate40=rate20,rate50=rate20,ratec0=ratec1,
                     tchange=c(0,1),type1=1,type0=1,
+                    rp21=0.5,rp20=0.5,
                     eps=1.0e-2,veps=1.0e-2,beta=0,beta0=0)
 }
 \arguments{
@@ -33,6 +34,8 @@ overallcovp1(tfix=2.0,tfix0=1.0,taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur),pi1=
   \item{tchange}{A strictly increasing sequence of time points at which the event rates changes. The first element of tchange                 must be zero. It must have the same length as \code{rate11}, \code{rate21}, \code{rate31}, etc.}
   \item{type1}{Type of crossover in the treatment group}
   \item{type0}{Type of crossover in the control group}
+  \item{rp21}{re-randomization prob in the treatment group}
+  \item{rp20}{re-randomization prob in the control group}
   \item{eps}{A small number representing the error tolerance when calculating the utility function
               \deqn{\Phi_l(x)=\frac{\int_0^x s^l e^{-s}ds}{x^{l+1}}} with \eqn{l=0,1,2}.}
   \item{veps}{A small number representing the error tolerance when calculating the Fisher information.}

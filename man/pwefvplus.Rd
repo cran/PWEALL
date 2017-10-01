@@ -5,7 +5,8 @@
 \usage{
 pwefvplus(t=seq(0,5,by=0.5),rate1=c(0,5,0.8),rate2=rate1,
                    rate3=c(0.1,0.2),rate4=rate2,rate5=rate2,
-                   rate6=c(0.5,0.3),tchange=c(0,3),type=1,eps=1.0e-2)
+                   rate6=c(0.5,0.3),tchange=c(0,3),type=1,
+                   rp2=0.5,eps=1.0e-2)
 }
 \arguments{
   \item{t}{A vector of time points}
@@ -16,7 +17,8 @@ pwefvplus(t=seq(0,5,by=0.5),rate1=c(0,5,0.8),rate2=rate1,
   \item{rate5}{additional piecewise constant}
   \item{rate6}{piecewise constant event rate for censoring}
   \item{tchange}{a strictly increasing sequence of time points starting from zero at which event rate changes. The first element of tchange must be zero. The above rates and tchange must have the same length.}
-  \item{type}{type of the integration}
+  \item{type}{type of the crossover, markov, semi-markov and hybrid}
+  \item{rp2}{re-randomization prob}
   \item{eps}{tolerance}
 }
 \details{Let \eqn{\lambda_1,\ldots,\lambda_6} correspond to \code{rate1},...,\code{rate6}

@@ -9,7 +9,7 @@
 ovbeta<-function(tfix=2.0,taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur),pi1=0.5,
                          rate11=c(1,0.5),rate21=rate11,rate31=c(0.7,0.4),rate41=rate21,rate51=rate21,ratec1=c(0.5,0.6),
                          rate10=rate11,rate20=rate10,rate30=rate31,rate40=rate20,rate50=rate20,ratec0=c(0.4,0.3),
-                         tchange=c(0,1),type1=1,type0=1,eps=1.0e-2,veps=1.0e-2,beta0=0,epsbeta=1.0e-4,iterbeta=25){
+                         tchange=c(0,1),type1=1,type0=1,rp21=0.5,rp20=0.5,eps=1.0e-2,veps=1.0e-2,beta0=0,epsbeta=1.0e-4,iterbeta=25){
   ##tfix: the time point where the overall log hazard ratio beta is calculated
   ##pi1: proportion of treatment group
   ##rate11: hazard before crossover for the treatment group
@@ -28,6 +28,8 @@ ovbeta<-function(tfix=2.0,taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur),pi1=0.5,
   ##ratec0: hazard for loss to follow-up for the control group
   ##type0: type of crossover for the control group
   ##tchange: points at which hazard changes
+  
+  ##rp21, rp20 re-randomization prob for the tx and contl groups
 
   ######Part A################################################################################
   #ratemax<-max(c(max(c(rate21,rate20)),max(c(rate11+rate31,rate10+rate30)),max(c(ratec1,ratec0)),max(abs(c(rate11+rate31-rate21,rate10+rate30-rate20)))))
@@ -65,8 +67,8 @@ ovbeta<-function(tfix=2.0,taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur),pi1=0.5,
   ###############################################################################################
 
 
-  BigK1<-pwecxpwuforvar(tfix=tfix,t=atsupp,taur=taur,u=u,ut=ut,rate1=rate11,rate2=rate21,rate3=rate31,rate4=rate41,rate5=rate51,ratec=ratec1,tchange=tchange,type=type1,eps=eps)
-  BigK0<-pwecxpwuforvar(tfix=tfix,t=atsupp,taur=taur,u=u,ut=ut,rate1=rate10,rate2=rate20,rate3=rate30,rate4=rate40,rate5=rate50,ratec=ratec0,tchange=tchange,type=type0,eps=eps)
+  BigK1<-pwecxpwuforvar(tfix=tfix,t=atsupp,taur=taur,u=u,ut=ut,rate1=rate11,rate2=rate21,rate3=rate31,rate4=rate41,rate5=rate51,ratec=ratec1,tchange=tchange,type=type1,rp2=rp21,eps=eps)
+  BigK0<-pwecxpwuforvar(tfix=tfix,t=atsupp,taur=taur,u=u,ut=ut,rate1=rate10,rate2=rate20,rate3=rate30,rate4=rate40,rate5=rate50,ratec=ratec0,tchange=tchange,type=type0,rp2=rp20,eps=eps)
   dk1<-BigK1$f0[-1]-BigK1$f0[-nsupp]
   dk0<-BigK0$f0[-1]-BigK0$f0[-nsupp]
   ###12/22/2016
@@ -78,13 +80,13 @@ ovbeta<-function(tfix=2.0,taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur),pi1=0.5,
   tk1<-tk0<-atsupp[-nsupp]
   tk1[adk1==1]<-(BigK1$f1[-1]-BigK1$f1[-nsupp])[adk1==1]/dk1[adk1==1]
   tk0[adk0==1]<-(BigK0$f1[-1]-BigK0$f1[-nsupp])[adk0==1]/dk0[adk0==1]
-  ST11<-pwecx(t=tk1,rate1=rate11,rate2=rate21,rate3=rate31,rate4=rate41,rate5=rate51,tchange=tchange,type=type1,eps=eps)$surv
-  ST10<-pwecx(t=tk1,rate1=rate10,rate2=rate20,rate3=rate30,rate4=rate40,rate5=rate50,tchange=tchange,type=type0,eps=eps)$surv
+  ST11<-pwecx(t=tk1,rate1=rate11,rate2=rate21,rate3=rate31,rate4=rate41,rate5=rate51,tchange=tchange,type=type1,rp2=rp21,eps=eps)$surv
+  ST10<-pwecx(t=tk1,rate1=rate10,rate2=rate20,rate3=rate30,rate4=rate40,rate5=rate50,tchange=tchange,type=type0,rp2=rp20,eps=eps)$surv
   SC11<-pwe(t=tk1,rate=ratec1,tchange=tchange)$surv
   SC10<-pwe(t=tk1,rate=ratec0,tchange=tchange)$surv
 
-  ST01<-pwecx(t=tk0,rate1=rate11,rate2=rate21,rate3=rate31,rate4=rate41,rate5=rate51,tchange=tchange,type=type1,eps=eps)$surv
-  ST00<-pwecx(t=tk0,rate1=rate10,rate2=rate20,rate3=rate30,rate4=rate40,rate5=rate50,tchange=tchange,type=type0,eps=eps)$surv
+  ST01<-pwecx(t=tk0,rate1=rate11,rate2=rate21,rate3=rate31,rate4=rate41,rate5=rate51,tchange=tchange,type=type1,rp2=rp21,eps=eps)$surv
+  ST00<-pwecx(t=tk0,rate1=rate10,rate2=rate20,rate3=rate30,rate4=rate40,rate5=rate50,tchange=tchange,type=type0,rp2=rp20,eps=eps)$surv
   SC01<-pwe(t=tk0,rate=ratec1,tchange=tchange)$surv
   SC00<-pwe(t=tk0,rate=ratec0,tchange=tchange)$surv
 

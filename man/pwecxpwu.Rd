@@ -7,7 +7,7 @@ pwecxpwu(t=seq(0,10,by=0.5),taur=5,
         u=c(1/taur,1/taur),ut=c(taur/2,taur),
         rate1=c(1,0.5),rate2=rate1,rate3=c(0.7,0.4),
         rate4=rate2,rate5=rate2,ratec=c(0.5,0.6),
-        tchange=c(0,1),type=1,eps=1.0e-2)
+        tchange=c(0,1),type=1,rp2=0.5,eps=1.0e-2)
 }
 \arguments{
   \item{t}{a vector of time points}
@@ -21,7 +21,8 @@ pwecxpwu(t=seq(0,10,by=0.5),taur=5,
   \item{rate5}{additional piecewise constant event rate for more complex crossover}
   \item{ratec}{censoring piecewise constant event rate}
   \item{tchange}{a strictly increasing sequence of time points starting from zero at which event rate changes. The first element of tchange must be zero. The above rates \code{rate1} to \code{ratec} and tchange must have the same length.}
-  \item{type}{type of crossover, i.e. markov, semi-markov}
+  \item{type}{type of crossover, i.e. markov, semi-markov and hybrid}
+  \item{rp2}{re-randomization prob}
   \item{eps}{tolerance}
 }
 \details{This is to calculate the function (and its derivative)

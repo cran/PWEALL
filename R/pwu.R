@@ -10,7 +10,7 @@
   rs<-sum(u*(ut-ut0))
   outr<-rep(0,nt)
   if (abs(rs-1)<0.0000001) {
-    abc2<-.Fortran("pwu",as.integer(nt),as.integer(nu),as.double(t),as.double(u),as.double(ut),outr1=as.double(outr))
+    abc2<-.Fortran("xpwu",as.integer(nt),as.integer(nu),as.double(t),as.double(u),as.double(ut),outr1=as.double(outr))
     outr<-abc2$outr1
   }
   list(dist=outr)

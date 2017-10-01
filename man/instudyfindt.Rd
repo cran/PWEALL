@@ -5,14 +5,16 @@
 \usage{
 instudyfindt(target=400,y=exp(rnorm(300)),z=rbinom(300,1,0.5),
                   d=rep(c(0,1,2),each=100),
-                  tcut=2,blinded=1,type0=1,type1=type0,tchange=c(0,1),
+                  tcut=2,blinded=1,type0=1,type1=type0,
+                  rp20=0.5,rp21=0.5,tchange=c(0,1),
                   rate10=c(1,0.7),rate20=c(0.9,0.7),rate30=c(0.4,0.6),rate40=rate20,
                   rate50=rate20,ratec0=c(0.3,0.3),
                   rate11=rate10,rate21=rate20,rate31=rate30,
                   rate41=rate40,rate51=rate50,ratec1=ratec0,
                   withmorerec=1,
                   ntotal=1000,taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur),pi1=0.5,
-                  ntype0=1,ntype1=1,ntchange=c(0,1),
+                  ntype0=1,ntype1=1,
+                  nrp20=0.5,nrp21=0.5,ntchange=c(0,1),
                   nrate10=rate10,nrate20=rate20,nrate30=rate30,nrate40=rate40,
                   nrate50=rate50,nratec0=ratec0,
                   nrate11=rate10,nrate21=rate20,nrate31=rate30,nrate41=rate40,
@@ -26,8 +28,10 @@ instudyfindt(target=400,y=exp(rnorm(300)),z=rbinom(300,1,0.5),
   \item{d}{event indicator, 1=event, 0=censored, 2=no event or censored up to \code{tcut}, the data cut-point}
   \item{tcut}{the data cut-point}
   \item{blinded}{blinded=1 if the data is blinded,=0 if it is unblinded}
-  \item{type0}{type of the crossover for the observed data for the control group}
-  \item{type1}{type of the crossover for the observed data for the treatment group}
+  \item{type0}{type of the crossover for the observed data in the control group}
+  \item{type1}{type of the crossover for the observed data in the treatment group}
+  \item{rp20}{re-randomization prob for the observed data in the control group}
+  \item{rp21}{re-randomization prob for the observed data in the treatment group}
   \item{tchange}{A strictly increasing sequence of time points at which the event rates changes. The first element of tchange                 must be zero. It must have the same length as \code{ratejk}, j=1,2,3,4,5,c; k=0,1}
   \item{rate10}{Hazard before crossover for the old subjects in the control group}
   \item{rate20}{Hazard after crossover for the old subjects in the control group}
@@ -49,8 +53,9 @@ instudyfindt(target=400,y=exp(rnorm(300)),z=rbinom(300,1,0.5),
   \item{pi1}{Allocation probability to the treatment group for the potential new subjects}
   \item{ntype0}{type of the crossover for the potential new subjects in the control group}
   \item{ntype1}{type of the crossover for the potential new subjects in the treatment group}
-  \item{ntchange}{A strictly increasing sequence of time points at which the event rates changes. The first element of
-           ntchange must be zero. It must have the same length as \code{nratejk}, j=1,2,3,4,5,c; k=0,1}
+  \item{nrp20}{re-randomization prob for the potential new subjects in the control group}
+  \item{nrp21}{re-randomization prob for the potential new subjects in the treatment group}
+  \item{ntchange}{A strictly increasing sequence of time points at which the event rates changes. The first element of ntchange must be zero. It must have the same length as \code{nratejk}, j=1,2,3,4,5,c; k=0,1}
   \item{nrate10}{Hazard before crossover for the potential new subjects in the control group}
   \item{nrate20}{Hazard after crossover for the potential new subjects in the control group}
   \item{nrate30}{Hazard for time to crossover for the potential new subjects in the control group}

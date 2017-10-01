@@ -7,7 +7,7 @@ pwesim<-function(t=seq(1,2,by=0.1),taur=1.2,u=c(1/taur,1/taur),ut=c(taur/2,taur)
                      rate41=rate21,rate51=rate21,ratec1=c(0.5,0.6),
                      rate10=rate11,rate20=rate10,rate30=rate31,
                      rate40=rate20,rate50=rate20,ratec0=c(0.6,0.5),
-                     tchange=c(0,1),type1=1,type0=1,
+                     tchange=c(0,1),type1=1,type0=1,rp21=0.5,rp20=0.5,
                      n=1000,rn=200,testtype=c(1,2,3,4)){
   ##t: the time point where the overall log hazard ratio beta is calculated
   ##pi1: proportion of treatment group
@@ -20,6 +20,7 @@ pwesim<-function(t=seq(1,2,by=0.1),taur=1.2,u=c(1/taur,1/taur),ut=c(taur/2,taur)
   ##rate30: hazard for treatment discontinuation for the control group
   ##ratec0: hazard for loss to follow-up for the control group
   ##tchange: points at which hazard changes
+  ##rp21, rp20 re-randomization prob for the tx and contl groups
 
   nt<-length(t)
   ntest<-length(testtype)
@@ -33,9 +34,9 @@ pwesim<-function(t=seq(1,2,by=0.1),taur=1.2,u=c(1/taur,1/taur),ut=c(taur/2,taur)
     C[Z==1]<-rpwe(nr=n1,rate=ratec1,tchange=tchange)$r
     C[Z==0]<-rpwe(nr=n0,rate=ratec0,tchange=tchange)$r
     T[Z==1]<-rpwecx(nr=n1,rate1=rate11,rate2=rate21,rate3=rate31,
-                    rate4=rate41,rate5=rate51,tchange=tchange,type=type1)$r
+                    rate4=rate41,rate5=rate51,tchange=tchange,type=type1,rp2=rp21)$r
     T[Z==0]<-rpwecx(nr=n0,rate1=rate10,rate2=rate20,rate3=rate30,
-                    rate4=rate40,rate5=rate50,tchange=tchange,type=type0)$r
+                    rate4=rate40,rate5=rate50,tchange=tchange,type=type0,rp2=rp20)$r
     for (i in 1:nt){
       y<-pmin(pmin(T,C),t[i]-E)
       y1<-pmin(C,t[i]-E)

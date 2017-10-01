@@ -7,7 +7,7 @@ pwepowerfindt<-function(power=0.9,alpha=0.05,twosided=1,tupp=5,tlow=1,taur=1.2,u
                      rate41=rate21,rate51=rate21,ratec1=c(0.5,0.6),
                      rate10=rate11,rate20=rate10,rate30=rate31,
                      rate40=rate20,rate50=rate20,ratec0=c(0.6,0.5),
-                     tchange=c(0,1),type1=1,type0=1,eps=1.0e-2,veps=1.0e-2,epsbeta=1.0e-04,iterbeta=25,
+                     tchange=c(0,1),type1=1,type0=1,rp21=0.5,rp20=0.5,eps=1.0e-2,veps=1.0e-2,epsbeta=1.0e-04,iterbeta=25,
                      n=1000,testtype=1,maxiter=20,itereps=0.001){
   ##power: the desired power
   ##alpha: alpha level
@@ -31,7 +31,7 @@ pwepowerfindt<-function(power=0.9,alpha=0.05,twosided=1,tupp=5,tlow=1,taur=1.2,u
   ##type0: type of crossover for the control group
   ##n: total number of subject to be recruited
   ##testtype: type of statistic the power calculation is based =1, log-rank; =2, Cox model; =3, log-rank with robust var; =4, overall (log)HR
-
+  ##rp21, rp20 re-randomization prob for the tx and contl groups
   ierr<-1.0;k<-0
   tempupp<-tupp;templow<-tlow;
   while (ierr>itereps & k<maxiter) {
@@ -41,7 +41,7 @@ pwepowerfindt<-function(power=0.9,alpha=0.05,twosided=1,tupp=5,tlow=1,taur=1.2,u
                  rate41=rate41,rate51=rate51,ratec1=ratec1,
                  rate10=rate10,rate20=rate20,rate30=rate30,
                  rate40=rate40,rate50=rate50,ratec0=ratec0,
-                 tchange=tchange,type1=type1,type0=type0,
+                 tchange=tchange,type1=type1,type0=type0,rp21=rp21,rp20=rp20,
                  n=n,eps=eps,veps=veps,
                  epsbeta=epsbeta,iterbeta=iterbeta)
     pw<-aa$power[,testtype]
@@ -57,7 +57,7 @@ pwepowerfindt<-function(power=0.9,alpha=0.05,twosided=1,tupp=5,tlow=1,taur=1.2,u
                 rate41=rate41,rate51=rate51,ratec1=ratec1,
                 rate10=rate10,rate20=rate20,rate30=rate30,
                 rate40=rate40,rate50=rate50,ratec0=ratec0,
-                tchange=tchange,type1=type1,type0=type0,
+                tchange=tchange,type1=type1,type0=type0,rp21=rp21,rp20=rp20,
                 n=n,eps=eps,veps=veps,
                 epsbeta=epsbeta,iterbeta=iterbeta)
   pw1<-bb$power[,testtype]

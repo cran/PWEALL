@@ -10,7 +10,7 @@ innercov<-function(tupp=seq(0,10,by=0.5),tlow=tupp-0.1,taur=5,
                    rate41=rate21,rate51=rate21,ratec1=c(0.5,0.6),
                    rate10=rate11,rate20=rate10,rate30=rate31,
                    rate40=rate20,rate50=rate20,ratec0=ratec1,
-                   tchange=c(0,1),type1=1,type0=1,eps=1.0e-2,veps=1.0e-2,beta=0){
+                   tchange=c(0,1),type1=1,type0=1,rp21=0.5,rp20=0.5,eps=1.0e-2,veps=1.0e-2,beta=0){
   ##tupp,tlow: upper and lower bounds of the inner integration
   ##pi1: proportion of treatment group
   ##rate11: hazard before dilution for the treatment group
@@ -22,6 +22,7 @@ innercov<-function(tupp=seq(0,10,by=0.5),tlow=tupp-0.1,taur=5,
   ##rate30: hazard for treatment discontinuation for the control group
   ##ratec0: hazard for loss to follow-up for the control group
   ##tchange: points at which hazard changes
+  ##rp21, rp20 re-randomization prob for the tx and contl groups
 
   ######Part A################################################################################
   nt<-length(tupp)
@@ -61,9 +62,9 @@ innercov<-function(tupp=seq(0,10,by=0.5),tlow=tupp-0.1,taur=5,
 
 
   t41<-pwefvplus(t=atplus,rate1=rate11,rate2=rate21,rate3=rate31,
-    rate4=rate41,rate5=rate51,rate6=ratec1,tchange=tchange,type=type1,eps=eps)
+    rate4=rate41,rate5=rate51,rate6=ratec1,tchange=tchange,type=type1,rp2=rp21,eps=eps)
   t40<-pwefvplus(t=atplus,rate1=rate10,rate2=rate20,rate3=rate30,
-    rate4=rate40,rate5=rate50,rate6=ratec0,tchange=tchange,type=type0,eps=eps)
+    rate4=rate40,rate5=rate50,rate6=ratec0,tchange=tchange,type=type0,rp2=rp20,eps=eps)
   t21<-pwefv2(t=atplus,rate1=rate11,rate2=rate11+rate31+ratec1,tchange=tchange,eps=eps)
   t20<-pwefv2(t=atplus,rate1=rate10,rate2=rate10+rate30+ratec0,tchange=tchange,eps=eps)
 
@@ -80,16 +81,16 @@ innercov<-function(tupp=seq(0,10,by=0.5),tlow=tupp-0.1,taur=5,
   tk0[adk0==1]<-(t40$f1[-1]+t20$f1[-1]-t40$f1[-nplus]-t20$f1[-nplus])[adk0==1]/dk0[adk0==1]
 
   ST11<-pwecx(t=tk1,rate1=rate11,rate2=rate21,rate3=rate31,
-        rate4=rate41,rate5=rate51,tchange=tchange,type=type1,eps=eps)$surv
+        rate4=rate41,rate5=rate51,tchange=tchange,type=type1,rp2=rp21,eps=eps)$surv
   ST10<-pwecx(t=tk1,rate1=rate10,rate2=rate20,rate3=rate30,
-        rate4=rate40,rate5=rate50,tchange=tchange,type=type0,eps=eps)$surv
+        rate4=rate40,rate5=rate50,tchange=tchange,type=type0,rp2=rp20,eps=eps)$surv
   SC11<-pwe(t=tk1,rate=ratec1,tchange=tchange)$surv
   SC10<-pwe(t=tk1,rate=ratec0,tchange=tchange)$surv
 
   ST01<-pwecx(t=tk0,rate1=rate11,rate2=rate21,rate3=rate31,
-        rate4=rate41,rate5=rate51,tchange=tchange,type=type1,eps=eps)$surv
+        rate4=rate41,rate5=rate51,tchange=tchange,type=type1,rp2=rp21,eps=eps)$surv
   ST00<-pwecx(t=tk0,rate1=rate10,rate2=rate20,rate3=rate30,
-        rate4=rate40,rate5=rate50,tchange=tchange,type=type0,eps=eps)$surv
+        rate4=rate40,rate5=rate50,tchange=tchange,type=type0,rp2=rp20,eps=eps)$surv
   SC01<-pwe(t=tk0,rate=ratec1,tchange=tchange)$surv
   SC00<-pwe(t=tk0,rate=ratec0,tchange=tchange)$surv
 

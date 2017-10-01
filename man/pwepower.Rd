@@ -9,8 +9,8 @@ pwepower(t=seq(0.1,3,by=0.5),alpha=0.05,twosided=1,taur=1.2,
              rate41=rate21,rate51=rate21,ratec1=c(0.5,0.6),
              rate10=rate11,rate20=rate10,rate30=rate31,
              rate40=rate20,rate50=rate20,ratec0=c(0.6,0.5),
-             tchange=c(0,1),type1=1,type0=1,eps=1.0e-2,
-             veps=1.0e-2,epsbeta=1.0e-04,iterbeta=25,
+             tchange=c(0,1),type1=1,type0=1,rp21=0.5,rp20=0.5,
+             eps=1.0e-2,veps=1.0e-2,epsbeta=1.0e-4,iterbeta=25,
              n=1000)
 }
 \arguments{
@@ -36,6 +36,8 @@ pwepower(t=seq(0.1,3,by=0.5),alpha=0.05,twosided=1,taur=1.2,
   \item{tchange}{A strictly increasing sequence of time points at which the event rates changes. The first element of tchange                 must be zero. It must have the same length as \code{rate11}, \code{rate21}, \code{rate31}, etc.}
   \item{type1}{Type of crossover in the treatment group}
   \item{type0}{Type of crossover in the control group}
+  \item{rp21}{re-randomization prob for the treatment group}
+  \item{rp20}{re-randomization prob for the control group}
   \item{eps}{error tolerence}
   \item{veps}{error tolenrence for calculating variance}
   \item{epsbeta}{error tolerance for calculating overall log HR}
@@ -45,7 +47,7 @@ pwepower(t=seq(0.1,3,by=0.5),alpha=0.05,twosided=1,taur=1.2,
 \details{
 The hazard functions corresponding to \code{rate11},...,\code{rate51},\code{ratec1}, \code{rate10},...,\code{rate50},\code{ratec0} are all piecewise constant function taking the form  \eqn{\lambda(t)=\sum_{j=1}^m \lambda_j I(t_{j-1}\le t<t_j)}, where \eqn{\lambda_1,\ldots,\lambda_m} are the corresponding elements of the rates and \eqn{t_0,\ldots,t_{m-1}} are the corresponding elements of \cite{tchange}, \eqn{t_m=\infty}. Note that all the rates must have the same \code{tchange}.
 }
-\value{\item{power}{powers for various test statistics. First column is for log-rank, second column is for Cox model and the third column is for log-rank with robust variance estimate}
+\value{\item{power}{powers for various test statistics. Columns 2-6 are for log-rank and columns 12-16 are for cox model. Column 2 is the exact power based on log-rank/score test; column 3 uses variance approximated by Fisher information, i.e. Lakatos's method; column 4 uses approximated Fisher info by number of events i.e. 4/D(t); column 5 uses approximated Fisher info by assuming exp dist. 1/D1(t)+1/D0(t); column 6 uses Fisher information at beta. Column 12 is the exact power based on Wald test;  column 13 uses variance approximated by Fisher information; column 14 uses approximated Fisher info by number of events i.e. 4/D(t); column 15 uses approximated Fisher info by assuming exp dist. 1/D1(t)+1/D0(t); column 16 uses Fisher information at beta=0.}
 }
 \references{
 Luo, et al. (2017)
@@ -74,7 +76,7 @@ getpower<-pwepower(t=t,alpha=0.05,twosided=1,taur=taur,u=u,ut=ut,pi1=0.5,
                    rate10=r10,rate20=r20,rate30=r30,rate40=r40,rate50=r50,ratec0=rc0,
                    tchange=c(0,1),type1=1,type0=1,n=1000)
 ###powers at each time point
-cbind(t,getpower$power[,1:3])
+cbind(t,getpower$power[,c(2:4,12:14)])
 }
 \keyword{piecewise exponential}
 \keyword{power}

@@ -10,7 +10,7 @@ overallvar<-function(tfix=2.0,taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur),pi1=0.
                      rate41=rate21,rate51=rate21,ratec1=c(0.5,0.6),
                      rate10=rate11,rate20=rate10,rate30=rate31,
                      rate40=rate20,rate50=rate20,ratec0=c(0.6,0.5),
-                     tchange=c(0,1),type1=1,type0=1,
+                     tchange=c(0,1),type1=1,type0=1,rp21=0.5,rp20=0.5,
                      eps=1.0e-2,veps=1.0e-2,beta=0){
   ##tfix: the time point where the overall log hazard ratio beta is calculated
   ##pi1: proportion of treatment group
@@ -23,7 +23,8 @@ overallvar<-function(tfix=2.0,taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur),pi1=0.
   ##rate30: hazard for treatment discontinuation for the control group
   ##ratec0: hazard for loss to follow-up for the control group
   ##tchange: points at which hazard changes
-
+  ##rp21, rp20 re-randomization prob for the tx and contl groups
+  
   ######Part A################################################################################
   #ratemax<-max(c(max(c(rate21,rate20)),max(c(rate11+rate31,rate10+rate30)),max(c(ratec1,ratec0)),max(abs(c(rate11+rate31-rate21,rate10+rate30-rate20)))))
   #Changed 3/2/2017 so that ratemax won't be too big or too small
@@ -70,11 +71,11 @@ overallvar<-function(tfix=2.0,taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur),pi1=0.
   BigK1<-pwecxpwuforvar(tfix=tfix,t=atsupp,taur=taur,u=u,ut=ut,
             rate1=rate11,rate2=rate21,rate3=rate31,
             rate4=rate41,rate5=rate51,ratec=ratec1,
-            tchange=tchange,type=type1,eps=eps)
+            tchange=tchange,type=type1,rp2=rp21,eps=eps)
   BigK0<-pwecxpwuforvar(tfix=tfix,t=atsupp,taur=taur,u=u,ut=ut,
             rate1=rate10,rate2=rate20,rate3=rate30,
             rate4=rate40,rate5=rate50,ratec=ratec0,
-            tchange=tchange,type=type0,eps=eps)
+            tchange=tchange,type=type0,rp2=rp20,eps=eps)
   dk1<-BigK1$f0[-1]-BigK1$f0[-nsupp]
   dk0<-BigK0$f0[-1]-BigK0$f0[-nsupp]
   ###12/22/2016
@@ -87,13 +88,13 @@ overallvar<-function(tfix=2.0,taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur),pi1=0.
   tk1[adk1==1]<-(BigK1$f1[-1]-BigK1$f1[-nsupp])[adk1==1]/dk1[adk1==1]
   tk0[adk0==1]<-(BigK0$f1[-1]-BigK0$f1[-nsupp])[adk0==1]/dk0[adk0==1]
   
-  ST11<-pwecx(t=tk1,rate1=rate11,rate2=rate21,rate3=rate31,rate4=rate41,rate5=rate51,tchange=tchange,type=type1,eps=eps)$surv
-  ST10<-pwecx(t=tk1,rate1=rate10,rate2=rate20,rate3=rate30,rate4=rate40,rate5=rate50,tchange=tchange,type=type0,eps=eps)$surv
+  ST11<-pwecx(t=tk1,rate1=rate11,rate2=rate21,rate3=rate31,rate4=rate41,rate5=rate51,tchange=tchange,type=type1,rp2=rp21,eps=eps)$surv
+  ST10<-pwecx(t=tk1,rate1=rate10,rate2=rate20,rate3=rate30,rate4=rate40,rate5=rate50,tchange=tchange,type=type0,rp2=rp20,eps=eps)$surv
   SC11<-pwe(t=tk1,rate=ratec1,tchange=tchange)$surv
   SC10<-pwe(t=tk1,rate=ratec0,tchange=tchange)$surv
 
-  ST01<-pwecx(t=tk0,rate1=rate11,rate2=rate21,rate3=rate31,rate4=rate41,rate5=rate51,tchange=tchange,type=type1,eps=eps)$surv
-  ST00<-pwecx(t=tk0,rate1=rate10,rate2=rate20,rate3=rate30,rate4=rate40,rate5=rate50,tchange=tchange,type=type0,eps=eps)$surv
+  ST01<-pwecx(t=tk0,rate1=rate11,rate2=rate21,rate3=rate31,rate4=rate41,rate5=rate51,tchange=tchange,type=type1,rp2=rp21,eps=eps)$surv
+  ST00<-pwecx(t=tk0,rate1=rate10,rate2=rate20,rate3=rate30,rate4=rate40,rate5=rate50,tchange=tchange,type=type0,rp2=rp20,eps=eps)$surv
   SC01<-pwe(t=tk0,rate=ratec1,tchange=tchange)$surv
   SC00<-pwe(t=tk0,rate=ratec0,tchange=tchange)$surv
 
@@ -117,12 +118,12 @@ overallvar<-function(tfix=2.0,taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur),pi1=0.
                 rate21=rate21,rate31=rate31,rate41=rate41,rate51=rate51,
                 ratec1=ratec1,rate10=rate10,rate20=rate20,rate30=rate30,
                 rate40=rate40,rate50=rate50,ratec0=ratec0,
-                tchange=tchange,type1=type1,type0=type0,
+                tchange=tchange,type1=type1,type0=type0,rp21=rp21,rp20=rp20,
                 eps=eps,veps=veps,beta=beta)
   ak0<-innervar(t=tk0,taur=taur,u=u,ut=ut,pi1=pi1,rate11=rate11,
                 rate21=rate21,rate31=rate31,rate41=rate41,rate51=rate51,
                 ratec1=ratec1,rate10=rate10,rate20=rate20,rate30=rate30,
-                rate40=rate40,rate50=rate50,ratec0=ratec0,
+                rate40=rate40,rate50=rate50,ratec0=ratec0,rp21=rp21,rp20=rp20,
                 tchange=tchange,type1=type1,type0=type0,
                 eps=eps,veps=veps,beta=beta)
 

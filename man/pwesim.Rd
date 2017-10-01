@@ -9,6 +9,7 @@ pwesim(t=seq(1,2,by=0.1),taur=1.2,u=c(1/taur,1/taur),ut=c(taur/2,taur),pi1=0.5,
                      rate10=rate11,rate20=rate10,rate30=rate31,
                      rate40=rate20,rate50=rate20,ratec0=c(0.6,0.5),
                      tchange=c(0,1),type1=1,type0=1,
+                     rp21=0.5,rp20=0.5,
                      n=1000,rn=200,testtype=c(1,2,3,4))
 }
 \arguments{
@@ -32,6 +33,8 @@ pwesim(t=seq(1,2,by=0.1),taur=1.2,u=c(1/taur,1/taur),ut=c(taur/2,taur),pi1=0.5,
   \item{tchange}{A strictly increasing sequence of time points at which the event rates changes. The first element of tchange                 must be zero. It must have the same length as \code{rate11}, \code{rate21}, \code{rate31}, etc.}
   \item{type1}{Type of crossover in the treatment group}
   \item{type0}{Type of crossover in the control group}
+  \item{rp21}{re-randomization prob in the treatment group}
+  \item{rp20}{re-randomization prob in the control group}
   \item{n}{number of subjects}
   \item{rn}{number of simulations}
   \item{testtype}{types of test statistics.}

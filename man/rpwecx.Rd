@@ -4,7 +4,7 @@
 \description{This will generate random numbers according to the piecewise exponential distribution with crossover}
 \usage{
 rpwecx(nr=1,rate1=c(1,0.5),rate2=rate1,rate3=c(0.7,0.4),
-rate4=rate2,rate5=rate2,tchange=c(0,1),type=1)
+rate4=rate2,rate5=rate2,tchange=c(0,1),type=1,rp2=0.5)
 }
 \arguments{
   \item{nr}{number of random numbers to be generated}
@@ -14,7 +14,10 @@ rate4=rate2,rate5=rate2,tchange=c(0,1),type=1)
   \item{rate4}{additional piecewise constant event rate for more complex crossover}
   \item{rate5}{additional piecewise constant event rate for more complex crossover}
   \item{tchange}{a strictly increasing sequence of time points starting from zero at which event rate changes. The first element of tchange must be zero. The above rates \code{rate1} to \code{rate6} and tchange must have the same length.}
-  \item{type}{type of crossover, i.e. markov, semi-markov}
+  \item{type}{type of crossover, 1=markov, 2=semi-markov, 3=hybrid}
+  \item{rp2}{re-randomization probability to receive the rescue treatment when semi-markov crossover occurs.
+        When it happens, the overall hazard will be pi2*r2(t-s)+(1-pi2)*r4(t), where r2 is the hazard 
+             for the semi-markov rescue treatment and r4 is hazard for the markov rescue treatment.} 
 }
 \details{More details}
 \value{\item{r}{random numbers}

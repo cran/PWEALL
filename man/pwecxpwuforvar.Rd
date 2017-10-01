@@ -5,7 +5,7 @@
 \usage{
 pwecxpwuforvar(tfix=10,t=seq(0,10,by=0.5),taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur),
     rate1=c(1,0.5),rate2=rate1,rate3=c(0.7,0.4),rate4=rate2,rate5=rate2,ratec=c(0.5,0.6),
-         tchange=c(0,1),type=1,eps=1.0e-2)
+         tchange=c(0,1),type=1,rp2=0.5,eps=1.0e-2)
 }
 \arguments{
   \item{tfix}{The upper point where the integral is computed.}
@@ -21,6 +21,7 @@ pwecxpwuforvar(tfix=10,t=seq(0,10,by=0.5),taur=5,u=c(1/taur,1/taur),ut=c(taur/2,
   \item{ratec}{Hazard for time to censoring}
   \item{tchange}{A strictly increasing sequence of time points at which the event rates changes. The first element of tchange                 must be zero. It must have the same length as \code{rate1}, \code{rate2}, \code{rate3}, etc.}
   \item{type}{Type of crossover}
+  \item{rp2}{re-randomization prob}
   \item{eps}{A small number representing the error tolerance when calculating the utility function
               \deqn{\Phi_l(x)=\frac{\int_0^x s^l e^{-s}ds}{x^{l+1}}} with \eqn{l=0,1,2}.}
 }
