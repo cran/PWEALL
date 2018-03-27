@@ -3,7 +3,7 @@
 \title{Calculating the timepoint where a certain power of mean difference of RMSTs is obtained}
 \description{This will calculate the timepoint where a certain power of the mean difference of RMSTs  is obtained accouting for staggered entry, delayed treatment effect,  treatment crossover and loss to follow-up.}
 \usage{
-rmstpowerfindt(power=0.9,alpha=0.05,twosided=1,tfix=2,tupp=5,tlow=3.0,taur=1.2,
+rmstpowerfindt(power=0.9,alpha=0.05,twosided=1,tcut=2,tupp=5,tlow=3.0,taur=1.2,
            u=c(1/taur,1/taur),ut=c(taur/2,taur),pi1=0.5,
            rate11=c(1,0.5),rate21=rate11,rate31=c(0.7,0.4),
            rate41=rate21,rate51=rate21,ratec1=c(0.5,0.6),
@@ -17,9 +17,9 @@ rmstpowerfindt(power=0.9,alpha=0.05,twosided=1,tfix=2,tupp=5,tlow=3.0,taur=1.2,
   \item{power}{the desired power}
   \item{alpha}{type-1 error}
   \item{twosided}{twoside test or not}
-  \item{tfix}{time point at which rmst is calculated}
-  \item{tupp}{an upper time point where the power should be larger than \code{power}}
-  \item{tlow}{a lower time point where the power should be smaller than \code{power}, \code{tlow} must be not smaller than \code{tfix}}
+  \item{tcut}{time point at which rmst is calculated}
+  \item{tupp}{an upper study time point where the power should be larger than \code{power}}
+  \item{tlow}{a lower study time point where the power should be smaller than \code{power}, \code{tlow} must be not smaller than \code{tcut}}
   \item{taur}{recruitment time}
   \item{u}{Piecewise constant recuitment rate}
   \item{ut}{Recruitment intervals}
@@ -64,8 +64,8 @@ Luo, et al. (2017)
 \note{Version 1.0 (8/8/2017)}
 \seealso{\code{\link{pwe}},\code{\link{rpwe}},\code{\link{qpwe}},\code{\link{ovbeta}},\code{\link{innervar}}}
 \examples{
-tfix<-3.0
-tcut<-seq(3,6,by=0.2)
+tcut<-3.0
+tstudy<-seq(3,6,by=0.2)
 taur<-2
 u<-c(0.3,0.7)
 ut<-c(taur/2,taur)
@@ -80,16 +80,16 @@ r30<-c(0.02,0.01)
 r40<-r50<-r20
 rc0<-c(0.04,0.05)
 ntotal<-1200
-getrmst<-rmstpower(tfix=tfix,tcut=tcut,alpha=0.05,twosided=1,
+getrmst<-rmstpower(tcut=tcut,tstudy=tstudy,alpha=0.05,twosided=1,
         taur=taur,u=u,ut=ut,pi1=0.5,
         rate11=r11,rate21=r21,rate31=r31,rate41=r41,rate51=r51,ratec1=rc1,
         rate10=r10,rate20=r20,rate30=r30,rate40=r40,rate50=r50,ratec0=rc0,
         tchange=c(0,1),type1=1,type0=1,rp21=0.5,rp20=0.5,n=ntotal)
 ###powers at each time point
-cbind(tcut,getrmst$power)
+cbind(tstudy,getrmst$power)
 
 ###90 percent power should be in (3,4)
-gettime<-rmstpowerfindt(power=0.9,alpha=0.05,twosided=1,tfix=tfix,tupp=4,tlow=3.0,taur=taur,
+gettime<-rmstpowerfindt(power=0.9,alpha=0.05,twosided=1,tcut=tcut,tupp=4,tlow=3.0,taur=taur,
           u=u,ut=ut,pi1=0.5,rate11=r11,rate21=r21,rate31=r31,rate41=r41,rate51=r51,ratec1=rc1,
           rate10=r10,rate20=r20,rate30=r30,rate40=r40,rate50=r50,ratec0=rc0,
           tchange=c(0,1),type1=1,type0=1,rp21=0.5,rp20=0.5,eps=1.0e-2,veps=1.0e-2,

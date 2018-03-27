@@ -2,7 +2,7 @@
 #   A function to find the exact time when a certain power is obtained using RMST
 #     account for delayed treatment, discontinued treatment and non-uniform entry
 ############################################################################################################################
-rmstpowerfindt<-function(power=0.9,alpha=0.05,twosided=1,tfix=2,tupp=5,tlow=3.0,taur=1.2,u=c(1/taur,1/taur),ut=c(taur/2,taur),pi1=0.5,
+rmstpowerfindt<-function(power=0.9,alpha=0.05,twosided=1,tcut=2,tupp=5,tlow=3.0,taur=1.2,u=c(1/taur,1/taur),ut=c(taur/2,taur),pi1=0.5,
                      rate11=c(1,0.5),rate21=rate11,rate31=c(0.7,0.4),
                      rate41=rate21,rate51=rate21,ratec1=c(0.5,0.6),
                      rate10=rate11,rate20=rate10,rate30=rate31,
@@ -12,7 +12,7 @@ rmstpowerfindt<-function(power=0.9,alpha=0.05,twosided=1,tfix=2,tupp=5,tlow=3.0,
   ##power: the desired power
   ##alpha: alpha level
   ##twodided: =1 two-sided test;=0 one-sided test
-  ##tfix: time point where RMST is calculated
+  ##tcut: time point where RMST is calculated
   ##tupp: the upper time point where the power is supposed to be bigger than the  desired
   ##tlow: the lower time point where the power is supposed to be smaller than the  desired
   ##taur: recruitment time
@@ -36,7 +36,7 @@ rmstpowerfindt<-function(power=0.9,alpha=0.05,twosided=1,tfix=2,tupp=5,tlow=3.0,
   tempupp<-tupp;templow<-tlow;
   while (ierr>itereps & k<maxiter) {
     ts<-c(templow,tempupp);tempd<-tempupp-templow
-    aa<-rmstpower(tfix=tfix,tcut=ts,alpha=alpha,twosided=twosided,taur=taur,u=u,ut=ut,pi1=pi1,
+    aa<-rmstpower(tcut=tcut,tstudy=ts,alpha=alpha,twosided=twosided,taur=taur,u=u,ut=ut,pi1=pi1,
                  rate11=rate11,rate21=rate21,rate31=rate31,
                  rate41=rate41,rate51=rate51,ratec1=ratec1,
                  rate10=rate10,rate20=rate20,rate30=rate30,
@@ -51,7 +51,7 @@ rmstpowerfindt<-function(power=0.9,alpha=0.05,twosided=1,tfix=2,tupp=5,tlow=3.0,
     else if (at>=(tempupp-0.000001)){templow<-at-tempd/2;tempupp<-at}
     else if (at<=(templow+0.000001)){templow<-at;tempupp<-at+tempd/2}
   }
-  bb<-rmstpower(tfix=tfix,tcut=at,alpha=alpha,twosided=twosided,taur=taur,u=u,ut=ut,pi1=pi1,
+  bb<-rmstpower(tcut=tcut,tstudy=at,alpha=alpha,twosided=twosided,taur=taur,u=u,ut=ut,pi1=pi1,
                 rate11=rate11,rate21=rate21,rate31=rate31,
                 rate41=rate41,rate51=rate51,ratec1=ratec1,
                 rate10=rate10,rate20=rate20,rate30=rate30,

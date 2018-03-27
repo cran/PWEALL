@@ -4,7 +4,7 @@
 \description{A function to calculate the variance and covariance of estimated restricted mean survival time 
 using data from different cut-off points accounting for delayed treatment, discontinued treatment and non-uniform entry}
 \usage{
-rmstcov(tfix=2.0,tcut=2.5,tfix1=3.0,tcut1=3.5,taur=5,
+rmstcov(t1cut=2.0,t1study=2.5,t2cut=3.0,t2study=3.5,taur=5,
         u=c(1/taur,1/taur),ut=c(taur/2,taur),
         rate1=c(1,0.5),rate2=rate1,rate3=c(0.7,0.4),
         rate4=rate2,rate5=rate2,ratec=c(0.5,0.6),
@@ -12,10 +12,10 @@ rmstcov(tfix=2.0,tcut=2.5,tfix1=3.0,tcut1=3.5,taur=5,
         eps=1.0e-2,veps=1.0e-2)
 }
 \arguments{
-  \item{tfix}{time point at which rmst is calculated}
-  \item{tcut}{the analysis cut-off points from first patient in, it must be larger than \code{tfix}. This will be used for study monitoring.}
-  \item{tfix1}{time point at which rmst is calculated. \code{tfix1} must be not smaller than \code{tfix}.}
-  \item{tcut1}{the analysis cut-off points from first patient in, it must be larger than \code{tfix1}. This will be used for study monitoring.}
+  \item{t1cut}{time point at which rmst is calculated}
+  \item{t1study}{the study time point from first patient in, it must be larger than \code{t1cut}. This will be used for study monitoring.}
+  \item{t2cut}{time point at which rmst is calculated. \code{t2cut} must be not smaller than \code{t1cut}.}
+  \item{t2study}{the study time point from first patient in, it must be larger than \code{t2cut}. This will be used for study monitoring.}
   \item{taur}{Recruitment time}
   \item{u}{Piecewise constant recuitment rate}
   \item{ut}{Recruitment intervals}
@@ -36,13 +36,13 @@ rmstcov(tfix=2.0,tcut=2.5,tfix1=3.0,tcut1=3.5,taur=5,
 }
 \details{More details}
 \value{
-  \item{tfix}{time point at which rmst is calculated}
-  \item{tcut}{the analysis cut-off points from first patient in, it must be larger than \code{tfix}. This will be used for study monitoring.}
-  \item{tfix1}{time point at which rmst is calculated. \code{tfix1} must be not smaller than \code{tfix}.}
-  \item{tcut1}{the analysis cut-off points from first patient in, it must be larger than \code{tfix1}. This will be used for study monitoring.}
-  \item{rmst}{rmst at \code{tfix} with cut-point \code{tcut}}
-  \item{rmst1}{rmst at \code{tfix1} with cut-point \code{tcut1}}
-  \item{rmstx}{rmst at \code{tfix} with cut-point \code{tcut1}, which should be the same as \code{rmst}.}
+  \item{t1cut}{time point at which rmst is calculated}
+  \item{t1study}{the study time point from first patient in, it must be larger than \code{t1cut}. This will be used for study monitoring.}
+  \item{t2cut}{time point at which rmst is calculated. \code{t2cut} must be not smaller than \code{t1cut}.}
+  \item{t2study}{the study time point from first patient in, it must be larger than \code{t2cut}. This will be used for study monitoring.}
+  \item{rmst}{rmst at cut-point \code{t1cut} with study time \code{t1study}}
+  \item{rmst1}{rmst at cut-point \code{t2cut} with study time \code{t2study}}
+  \item{rmstx}{rmst at cut-point \code{t1cut} with study time \code{t2study}, which should be the same as \code{rmst}.}
   \item{v}{the variance of \code{rmst}}
   \item{v1}{the variance of \code{rmst1}}
   \item{cov}{the covariance of \code{rmst} and \code{rmst1}}
@@ -60,7 +60,7 @@ r3<-c(0.1,0.2)
 r4<-c(0.5,0.4)
 r5<-c(0.4,0.5)
 rc<-c(0.1,0.1)
-rmcov<-rmstcov(tfix=2.0,tcut=2.5,tfix1=3.0,tcut1=3.5,taur=5,
+rmcov<-rmstcov(t1cut=2.0,t1study=2.5,t2cut=3.0,t2study=3.5,taur=5,
         rate1=r1,rate2=r2,rate3=r3,rate4=r4,rate5=r5,ratec=rc,
         tchange=c(0,1),type=1)
 rmcov

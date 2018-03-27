@@ -5,15 +5,15 @@
 \description{A utility function to calculate the true restricted mean survival time (RMST) and its variance
      account for delayed treatment, discontinued treatment and non-uniform entry}
 \usage{
-rmstutil(tfix=2.0,tcut=5.0,taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur),
+rmstutil(tcut=2.0,tstudy=5.0,taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur),
         rate1=c(1,0.5),rate2=rate1,rate3=c(0.7,0.4),
         rate4=rate2,rate5=rate2,ratec=c(0.5,0.6),
         tchange=c(0,1),type=1,rp2=0.5,
         eps=1.0e-2,veps=1.0e-2)
 }
 \arguments{
-  \item{tfix}{time point at which rmst is calculated}
-  \item{tcut}{the analysis cut-off points from first patient in, it must be not smaller than \code{tfix}.}
+  \item{tcut}{time point at which rmst is calculated}
+  \item{tstudy}{the study time point from first patient in, it must be not smaller than \code{tcut}.}
   \item{taur}{Recruitment time}
   \item{u}{Piecewise constant recuitment rate}
   \item{ut}{Recruitment intervals}
@@ -34,9 +34,9 @@ rmstutil(tfix=2.0,tcut=5.0,taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur),
 }
 \details{More details}
 \value{
-  \item{tfix}{time point at which rmst is calculated}
-  \item{tcut}{the analysis cut-off points from first patient in, it must be not smaller than \code{tfix}}
-  \item{rmst}{rmst at \code{tfix}}
+  \item{tcut}{time point at which rmst is calculated}
+  \item{tstudy}{the study time point from first patient in, it must be not smaller than \code{tcut}}
+  \item{rmst}{rmst at cut-point \code{tcut}}
   \item{var}{the variance of \code{rmst}}
   \item{vadd}{the additional variance term of \code{rmst}}
 }
@@ -52,7 +52,7 @@ r3<-c(0.1,0.2)
 r4<-c(0.5,0.4)
 r5<-c(0.4,0.5)
 rc<-c(0.1,0.1)
-rmt<-rmstutil(tfix=2.0,tcut=5.0,taur=5,
+rmt<-rmstutil(tcut=2.0,tstudy=5.0,taur=5,
         rate1=r1,rate2=r2,rate3=r3,
         rate4=r4,rate5=r5,ratec=rc,
         tchange=c(0,1),type=1,rp2=0.5,

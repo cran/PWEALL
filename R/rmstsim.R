@@ -2,14 +2,15 @@
 #   A function to simulate the power of RMST difference
 #     account for delayed treatment, discontinued treatment and non-uniform entry
 ############################################################################################################################
-rmstsim<-function(tfix=1.0,t=seq(tfix,tfix+1,by=0.1),taur=1.2,u=c(1/taur,1/taur),ut=c(taur/2,taur),pi1=0.5,
+#rmstsim<-function(tc=c(1,2),t=tc+0.2,taur=1.2,u=c(1/taur,1/taur),ut=c(taur/2,taur),pi1=0.5,
+rmstsim<-function(tcut=c(1,2),tstudy=tcut+0.2,taur=1.2,u=c(1/taur,1/taur),ut=c(taur/2,taur),pi1=0.5,
                  rate11=c(1,0.5),rate21=rate11,rate31=c(0.7,0.4),
                  rate41=rate21,rate51=rate21,ratec1=c(0.5,0.6),
                  rate10=rate11,rate20=rate10,rate30=rate31,
                  rate40=rate20,rate50=rate20,ratec0=c(0.6,0.5),
                  tchange=c(0,1),type1=1,type0=1,rp21=0.5,rp20=0.5,
                  n=1000,rn=200,eps=1.0E-08){
-  ##tfix: time at which RMST is calcualted
+  ##tc: time at which RMST is calcualted
   ##t: the time points (from FPI) where data is cut.
   ##pi1: proportion of treatment group
   ##rate11: hazard before dilution for the treatment group
@@ -22,8 +23,8 @@ rmstsim<-function(tfix=1.0,t=seq(tfix,tfix+1,by=0.1),taur=1.2,u=c(1/taur,1/taur)
   ##ratec0: hazard for loss to follow-up for the control group
   ##tchange: points at which hazard changes
   ##rp21, rp20 re-randomization prob for the tx and contl groups
-  nt<-length(t)
-  outr<-matrix(0,nrow=rn,ncol=nt)
+  nt<-length(tcut)
+  outr<-rmst1<-rmst0<-se1<-se0<-drmst<-sed<-matrix(0,nrow=rn,ncol=nt)
   for (r in 1:rn){
     E<-T<-C<-Z<-delta<-rep(0,n)
     E<-rpwu(nr=n,u=u,ut=ut)$r
@@ -37,18 +38,25 @@ rmstsim<-function(tfix=1.0,t=seq(tfix,tfix+1,by=0.1),taur=1.2,u=c(1/taur,1/taur)
     T[Z==0]<-rpwecx(nr=n0,rate1=rate10,rate2=rate20,rate3=rate30,
                     rate4=rate40,rate5=rate50,tchange=tchange,type=type0,rp2=rp20)$r
     for (i in 1:nt){
-      y<-pmin(pmin(T,C),t[i]-E)
-      y1<-pmin(C,t[i]-E)
+      y<-pmin(pmin(T,C),tstudy[i]-E)
+      y1<-pmin(C,tstudy[i]-E)
+      delta<-rep(0,n)
       delta[T<=y1]<-1
       ###RMST
       yy1<-y[Z==1];dd1<-delta[Z==1]
-      a1<-rmsth(y=yy1,d=dd1,tfix=tfix,eps=eps)
+      a1<-rmsth(y=yy1,d=dd1,tcut=tcut[i],eps=eps)
       yy0<-y[Z==0];dd0<-delta[Z==0]
-      a0<-rmsth(y=yy0,d=dd0,tfix=tfix,eps=eps)
+      a0<-rmsth(y=yy0,d=dd0,tcut=tcut[i],eps=eps)
       outr[r,i]<-(a1$rmst-a0$rmst)/sqrt(a1$var/n1+a0$var/n0)
+      rmst1[r,i]<-a1$rmst
+      rmst0[r,i]<-a0$rmst
+      se1[r,i]<-sqrt(a1$var/n1)
+      se0[r,i]<-sqrt(a0$var/n0)
+      drmst[r,i]<-a1$rmst-a0$rmst
+      sed<-sqrt(a1$var/n1+a0$var/n0)
     }
   }
-  list(outr=outr)
+  list(outr=outr,rmst1=rmst1,se1=se1,rmst0=rmst0,se0=se0,drmst=drmst,sed=sed)
 }
 
 

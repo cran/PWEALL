@@ -3,7 +3,7 @@
 \title{simulating the restricted mean survival times}
 \description{This will simulate the test statistics accouting for staggered entry, delayed treatment effect,  treatment crossover and loss to follow-up.}
 \usage{
-rmstsim(tfix=1.0,t=seq(tfix,tfix+1,by=0.1),taur=1.2,
+rmstsim(tcut=c(1,2),tstudy=tcut+0.2,taur=1.2,
         u=c(1/taur,1/taur),ut=c(taur/2,taur),pi1=0.5,
         rate11=c(1,0.5),rate21=rate11,rate31=c(0.7,0.4),
         rate41=rate21,rate51=rate21,ratec1=c(0.5,0.6),
@@ -13,8 +13,8 @@ rmstsim(tfix=1.0,t=seq(tfix,tfix+1,by=0.1),taur=1.2,
         n=1000,rn=200,eps=1.0E-08)
 }
 \arguments{
-  \item{tfix}{time point at which rmst is calculated}
-  \item{t}{a vector of cut points}
+  \item{tcut}{a vector of time points at which rmst are calculated}
+  \item{tstudy}{a vector of study time points, should be the same length as \code{tcut} and should be not less than \code{tcut} element-wise}
   \item{taur}{Recruitment time}
   \item{u}{Piecewise constant recuitment rate}
   \item{ut}{Recruitment intervals}
@@ -43,16 +43,16 @@ rmstsim(tfix=1.0,t=seq(tfix,tfix+1,by=0.1),taur=1.2,
 \details{
 The hazard functions corresponding to \code{rate11},...,\code{rate51},\code{ratec1}, \code{rate10},...,\code{rate50},\code{ratec0} are all piecewise constant function taking the form  \eqn{\lambda(t)=\sum_{j=1}^m \lambda_j I(t_{j-1}\le t<t_j)}, where \eqn{\lambda_1,\ldots,\lambda_m} are the corresponding elements of the rates and \eqn{t_0,\ldots,t_{m-1}} are the corresponding elements of \cite{tchange}, \eqn{t_m=\infty}. Note that all the rates must have the same \code{tchange}.
 }
-\value{\item{outr}{test statistics at each cut point and each simulation run}
+\value{\item{outr}{test statistics at each pair of \code{tcut} and \code{tstudy} in column and each simulation run in row}
 }
 \references{
 Luo, et al. (2017)
 }
 \author{Xiaodong Luo}
 \note{Version 1.0 (7/19/2016)}
-\seealso{\code{\link{pwe}},\code{\link{rpwe}},\code{\link{qpwe}},\code{\link{ovbeta}},\code{\link{innervar}}}
+\seealso{\code{\link{pwe}},\code{\link{rpwe}},\code{\link{qpwe}},\code{\link{ovbeta}}}
 \examples{
-tfix<-2
+tcuta<-c(2,3)
 taur<-1.2
 u<-c(1/taur,1/taur)
 ut<-c(taur/2,taur)
@@ -66,7 +66,7 @@ r20<-c(0.5,1)
 r30<-c(0.3,0.4)
 r40<-r50<-r20
 rc0<-c(0.2,0.4)
-ar<-rmstsim(tfix=tfix,t=seq(2,3,by=0.1),taur=taur,u=u,ut=ut,pi1=0.5,
+ar<-rmstsim(tcut=tcuta,tstudy=tcuta+0.1,taur=taur,u=u,ut=ut,pi1=0.5,
             rate11=r11,rate21=r21,rate31=r31,rate41=r41,rate51=r51,ratec1=rc1,
             rate10=r10,rate20=r20,rate30=r30,rate40=r40,rate50=r50,ratec0=rc0,
             tchange=c(0,1),type1=1,type0=1,

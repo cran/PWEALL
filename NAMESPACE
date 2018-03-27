@@ -3,6 +3,7 @@ export(cp)
 export(cpboundary)
 export(cpstop)
 export(fourhr)
+export(hxbeta)
 export(innercov)
 export(innervar)
 export(instudyfindt)
@@ -40,8 +41,9 @@ export(spf)
 export(wlrcal)
 export(wlrcom)
 export(wlrutil)
+#export(solveabc)
 import("survival")
-importFrom("stats", "pnorm", "qnorm", "rbinom", "runif", "residuals", "rnorm")
+importFrom("stats", "pnorm", "qnorm", "rbinom", "runif", "residuals", "rnorm", "dbeta")
 
 
 

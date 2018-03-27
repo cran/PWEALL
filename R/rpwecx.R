@@ -17,6 +17,7 @@ rpwecx<-function(nr=1,rate1=c(1,0.5),rate2=rate1,rate3=c(0.7,0.4),rate4=rate2,ra
   #           for the (semi-markov) rescue treatment and rate4 is hazard for the (markov) rescue treatment
 
   #set.seed(ISEEDS[3])
+  if (min(rate3)<1.0e-08)rate3<-rate3+1.0e-08
   t3<-rpwe(nr=nr, rate=rate3, tchange=tchange)$r
   if (type==1){
     s1t3<-pwe(t=t3,rate=rate1,tchange=tchange)$surv
@@ -37,30 +38,20 @@ rpwecx<-function(nr=1,rate1=c(1,0.5),rate2=rate1,rate3=c(0.7,0.4),rate4=rate2,ra
     y[x>s1t3]<-qpwe(p=1-x[x>s1t3],rate=rate1,tchange=tchange)$q
     y[x<=s1t3]<-t3[x<=s1t3]+qpwe(p=1-x1[x<=s1t3],rate=rate2,tchange=tchange)$q
   }
+  ###Xiaodong double-checked type=3 on 10/10/2017
   else if (type==3){
-    ind2<-rbinom(nr,1,rp2)
-    
     s1t3<-pwe(t=t3,rate=rate1,tchange=tchange)$surv
-    s2t3<-pwe(t=t3,rate=rate2,tchange=tchange)$surv
+    s4t3<-pwe(t=t3,rate=(1-rp2)*rate4,tchange=tchange)$surv
     #set.seed(ISEEDS[1])
-    x<-runif(nr)
-    x1<-x*s2t3/s1t3
+    x<-runif(nr);z<-runif(nr)
+    x1<-x/s1t3;z1<-z*s4t3
     y<-rep(0,nr)
     y[x>s1t3]<-qpwe(p=1-x[x>s1t3],rate=rate1,tchange=tchange)$q
-    y[x<=s1t3]<-qpwe(p=1-x1[x<=s1t3],rate=rate2,tchange=tchange)$q
-    y2<-y
-    
-    s1t3<-pwe(t=t3,rate=rate1,tchange=tchange)$surv
-    #set.seed(ISEEDS[1])
-    x<-runif(nr)
-    x1<-x/s1t3
-    y<-rep(0,nr)
-    y[x>s1t3]<-qpwe(p=1-x[x>s1t3],rate=rate1,tchange=tchange)$q
-    y[x<=s1t3]<-t3[x<=s1t3]+qpwe(p=1-x1[x<=s1t3],rate=rate4,tchange=tchange)$q
-    y4<-y
-    
-    y<-y2
-    y[ind2==0]<-y4[ind2==0]
+    if (sum(x<=s1t3)>0){
+      atemp<-t3[x<=s1t3]+qpwe(p=1-x1[x<=s1t3],rate=rp2*rate2,tchange=tchange)$q
+      btemp<-qpwe(p=1-z1[x<=s1t3],rate=(1-rp2)*rate4,tchange=tchange)$q
+      y[x<=s1t3]<-pmin(atemp,btemp)
+    }
   }
   list(r=y)
 }

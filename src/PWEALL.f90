@@ -1,6 +1,6 @@
 
 SUBROUTINE XPWE(NT,NR,T,R,TCHANGE,OUTR)
-!DEC$ ATTRIBUTES DLLEXPORT,C,REFERENCE,ALIAS:'xpwe_' ::XPWE
+!DEC$ ATTRIBUTES DLLEXPORT,C,REFERENCE,ALIAS:'xpwe_'::XPWE
    IMPLICIT NONE
    INTEGER,INTENT(IN)::NT,NR
    REAL(8),INTENT(IN)::T(NT),R(NR),TCHANGE(NR)
@@ -156,22 +156,31 @@ SUBROUTINE XSPF(NX,X,EPS,FX)
    RETURN
 END SUBROUTINE XSPF
 
+!Modified 11/15/2017
+
 SUBROUTINE XPWEFVPLUS(NT,NR,T,R1,R2,R3,R4,R5,R6,TCHANGE,TYPE,RP2,EPS,FX)
 !DEC$ ATTRIBUTES DLLEXPORT,C,REFERENCE,ALIAS:'xpwefvplus_' ::XPWEFVPLUS
    IMPLICIT NONE
    INTEGER,INTENT(IN)::NT,NR,TYPE
    REAL(8),INTENT(IN)::T(NT),R1(NR),R2(NR),R3(NR),R4(NR),R5(NR),R6(NR),TCHANGE(NR),RP2,EPS
    REAL(8),INTENT(OUT)::FX(NT,3)
-   REAL(8)::TEM1(NT,3),TEM2(NT,3)
+   REAL(8)::TEM1(NT,3),TEM2(NT,3),PIR2(NR),PIR4(NR),RONE(NR)
    IF (TYPE==1) THEN
       CALL XPWEFV4(NT,NR,T,R2,R2+R6,R3,R1+R3-R2,TCHANGE,EPS,FX)
    ELSE IF (TYPE==2) THEN
       CALL XPWEFV4TYPE2(NT,NR,T,R1+R3,R2,R3,R6,TCHANGE,EPS,FX)
    ELSE IF (TYPE==3) THEN
-      CALL XPWEFV4TYPE2(NT,NR,T,R1+R3,R2,R3,R6,TCHANGE,EPS,TEM1)
-      ! USE R4 TO REPLACE R2
-      CALL XPWEFV4(NT,NR,T,R4,R4+R6,R3,R1+R3-R4,TCHANGE,EPS,TEM2) 
-      FX=RP2*TEM1+(1.0-RP2)*TEM2
+      !CALL XPWEFV4TYPE2(NT,NR,T,R1+R3,R2,R3,R6,TCHANGE,EPS,TEM1) !CHANGED
+      ! USE R4 TO REPLACE R2                                      !CHANGED
+      !CALL XPWEFV4(NT,NR,T,R4,R4+R6,R3,R1+R3-R4,TCHANGE,EPS,TEM2)!CHANGED 
+      !FX=RP2*TEM1+(1.0-RP2)*TEM2                                 !CHANGED
+      
+      PIR2=RP2*R2
+      PIR4=(1.0-RP2)*R4
+      RONE=1.0
+      CALL XPWEFV6(NT,NR,T,R1+R3-PIR4,PIR2,R3,PIR4+R6,RONE,PIR2,TCHANGE,EPS,TEM1)
+      CALL XPWEFV6(NT,NR,T,R1+R3-PIR4,PIR2,R3,PIR4+R6,PIR4,RONE,TCHANGE,EPS,TEM2) 
+      FX=TEM1+TEM2
    ELSE
       CALL XPWEFV4(NT,NR,T,R2,R2+R6,R3,R1+R3-R2,TCHANGE,EPS,FX)
    END IF
@@ -207,7 +216,7 @@ SUBROUTINE XPWECXPWU(NT,NR,NU,T,TAUR,U,UT,R1,R2,R3,R4,R5,RC,TCHANGE,TYPE,RP2,EPS
          CALL XPWEFVPLUS(N1,NR,TEMP,R1,R2,R3,R4,R5,RC,TCHANGE,TYPE,RP2,EPS,FX4)
          CALL XPWEFV2(N1,NR,TEMP,R1,R1+R3+RC,TCHANGE,EPS,FX2)
          A=FX4(:,1)+FX2(:,1);A0=TEMP*A;A1=FX4(:,2)+FX2(:,2)
-         DU(I)=SUM(U*(A0(1:NU)-A0(2:N1)))-SUM(U*(A1(1:NU)-A1(2:N1)))
+8         DU(I)=SUM(U*(A0(1:NU)-A0(2:N1)))-SUM(U*(A1(1:NU)-A1(2:N1)))
          DUPRIME(I)=SUM(U*(A(1:NU)-A(2:N1)))
       END DO
       DEALLOCATE(TEMP,TM,FX4,FX2,A,A0,A1)
@@ -1139,22 +1148,23 @@ SUBROUTINE XRMSTH(N,Y,D,TFIX,NT,TE,EPS,RMST,VRMST,VADD)
       XK(I)=TE(I)*XS(I+1)+SUM(TEMP(1:I))
    END DO
    
-   TEMP1=(RMST-XK)*(1.0-XLAM)*XLAM/XR
-   !TEMP1=(RMST-XK)*XLAM/XR
+   !This one seems to underestimate the var
+   !TEMP1=(RMST-XK)*(1.0-XLAM)*XLAM/XR !
+   TEMP1=(RMST-XK)*XLAM/XR
    TEMP=(RMST-XK)*TEMP1
    VRMST=SUM(TEMP,TE<=TFIX)
    VADD=SUM(TEMP1,TE<=TFIX)
    RETURN
 END SUBROUTINE XRMSTH
 
-SUBROUTINE XWLRCAL(N,NT,TE,TFIX,DD1,DD0,R1,R0,NW,WEIGHTS,EPS,XTEST,XVTEST,XLR)
+SUBROUTINE XWLRCAL(N,NT,TE,TFIX,DD1,DD0,R1,R0,NW,WEIGHTS,EPS,XTEST,XVTEST,XLR,XLCOR)
 !DEC$ ATTRIBUTES DLLEXPORT,C,REFERENCE,ALIAS:'xwlrcal_' ::XWLRCAL
    IMPLICIT NONE
    INTEGER,INTENT(IN)::N,NT,NW
    REAL(8),INTENT(IN)::TE(NT),TFIX,DD1(NT),DD0(NT),R1(NT),R0(NT),WEIGHTS(NT,NW),EPS
-   REAL(8),INTENT(OUT)::XTEST(NW),XVTEST(NW),XLR(NW)
+   REAL(8),INTENT(OUT)::XTEST(NW),XVTEST(NW),XLR(NW),XLCOR(NW,NW)
 
-   INTEGER::I
+   INTEGER::I,J
    REAL(8),ALLOCATABLE,DIMENSION(:)::R,DD,TEMP,TEMP1,TEM,TEM1
    REAL(8)::ETEMP
 
@@ -1169,6 +1179,8 @@ SUBROUTINE XWLRCAL(N,NT,TE,TFIX,DD1,DD0,R1,R0,NW,WEIGHTS,EPS,XTEST,XVTEST,XLR)
          TEM1(I)=TEM1(I)*(R(I)-DD(I))/(R(I)-ETEMP)
       END IF
    END DO
+   
+   
    DO I=1,NW,1
       TEMP=TEM*WEIGHTS(:,I)
       TEMP1=TEM1*WEIGHTS(:,I)**2
@@ -1176,9 +1188,59 @@ SUBROUTINE XWLRCAL(N,NT,TE,TFIX,DD1,DD0,R1,R0,NW,WEIGHTS,EPS,XTEST,XVTEST,XLR)
       XVTEST(I)=SUM(TEMP1,TE<=TFIX)
       XLR(I)=DSQRT(REAL(N,8))*XTEST(I)/DSQRT(XVTEST(I))
    END DO
+   
+   XLCOR=1.0
+   DO I=1,NW,1
+      DO J=I,NW,1
+         IF (J>I) THEN
+            TEMP1=TEM1*WEIGHTS(:,I)*WEIGHTS(:,J)
+            XLCOR(I,J)=SUM(TEMP1,TE<=TFIX)/DSQRT(XVTEST(I)*XVTEST(J))
+            XLCOR(J,I)=XLCOR(I,J)
+         END IF
+      END DO
+   END DO
    DEALLOCATE(R,DD,TEMP,TEMP1,TEM,TEM1)
    RETURN
 END SUBROUTINE XWLRCAL
+
+!Added 3/19/2018
+SUBROUTINE XWCOXCAL(N,NT,TE,TFIX,DD1,DD0,R1,R0,NW,WEIGHTS,EPS,XTOL,MAXITER,XBETA,XVBETA,XLCOR)
+!DEC$ ATTRIBUTES DLLEXPORT,C,REFERENCE,ALIAS:'xwcoxcal_' ::XWCOXCAL
+   IMPLICIT NONE
+   INTEGER,INTENT(IN)::N,NT,NW,MAXITER
+   REAL(8),INTENT(IN)::TE(NT),TFIX,DD1(NT),DD0(NT),R1(NT),R0(NT),WEIGHTS(NT,NW),EPS,XTOL
+   REAL(8),INTENT(OUT)::XBETA(NW),XVBETA(NW),XLCOR(NW,NW)
+
+   INTEGER::I,J,K,RI
+   REAL(8),ALLOCATABLE,DIMENSION(:)::R,DD,TEMP,TEMP1,TEM,TEM1,TX
+   REAL(8)::ETEMP,EP,B1,B0,XTEM,X1TEM
+
+   ETEMP=1.0/REAL(N,8)
+   ALLOCATE(R(NT),DD(NT),TEMP(NT),TEMP1(NT),TEM(NT),TEM1(NT),TX(NT))
+   DD=DD1+DD0
+   
+   DO K=1,NW,1
+      RI=0;EP=1.0;B1=0.0;B0=0.0
+      DO WHILE (RI<MAXITER .AND. EP>XTOL)
+         TX=DEXP(B0*WEIGHTS(:,K))
+         R=TX*R1+R0
+         TEM=(DD1-DD*TX*R1/R)*WEIGHTS(:,K)
+         TEM1=DD*(TX*R1*R0/R**2)*WEIGHTS(:,K)**2
+         XTEM=SUM(TEM,TE<=TFIX)
+         X1TEM=SUM(TEM1,TE<=TFIX)
+         B1=B0+XTEM/X1TEM
+         RI=RI+1;EP=DABS(B1-B0)
+         B0=B1
+      END DO
+      XBETA(K)=B1;XVBETA(K)=1.0/X1TEM
+   END DO
+   XLCOR=1.0
+   
+   DEALLOCATE(R,DD,TEMP,TEMP1,TEM,TEM1,TX)
+   RETURN
+END SUBROUTINE XWCOXCAL
+
+
 
 SUBROUTINE XSURVFUNC(N,Y,D,NT,TE,EPS,NTR,TR,RR,ST)
 !DEC$ ATTRIBUTES DLLEXPORT,C,REFERENCE,ALIAS:'xsurvfunc_' ::XSURVFUNC
@@ -1278,4 +1340,486 @@ SUBROUTINE XWLRUTIL(N,Y,D,Z,NT,TE,EPS,MFUNC)
    RETURN
 END SUBROUTINE XWLRUTIL
 
+!Added 11/15/2017
+SUBROUTINE XPWEFV6(NT,NR,TIN,R1,R2,R3,R4,R5,R6,TCHANGE,EPS,FX)
+!DEC$ ATTRIBUTES DLLEXPORT,C,REFERENCE,ALIAS:'xpwefv6_' ::XPWEFV6
+   IMPLICIT NONE
+   INTEGER,INTENT(IN)::NT,NR
+   REAL(8),INTENT(IN)::TIN(NT),R1(NR),R2(NR),R3(NR),R4(NR),R5(NR),R6(NR),TCHANGE(NR),EPS
+   REAL(8),INTENT(OUT)::FX(NT,3)
 
+   INTEGER::N1,NR2,I,J,K,POS(NT),INDT(NT),J1,JM,JM1,SINDJ3,SINDJ2,SINDJ1,SINDJ0
+   REAL(8)::TT(0:(2*NR-1))
+
+   REAL(8)::TMAX,XX
+   REAL(8),DIMENSION(0:NR,5)::PR1,PR2,PR4
+
+   REAL(8)::TX20(1,3),TX40(1,3)
+
+   REAL(8)::L2(1),L4(1),L24,ATEMP,ATEMP1,ATEMP2,ATEMP3
+   REAL(8),DIMENSION(3)::TA,TB,TC
+
+   REAL(8),ALLOCATABLE,DIMENSION(:,:)::FXX,XLA,XLB,ALLG,TX2,TX4
+   REAL(8),ALLOCATABLE,DIMENSION(:)::T,BTEMP,BTEMP1,BTEMP2,TJ
+   INTEGER,ALLOCATABLE,DIMENSION(:)::INDTS,INDJ,IND,INDS
+
+   FX=0.0;POS=0
+   INDT=(/(I,I=1,NT)/)
+   WHERE (TIN>0.0)
+      POS=1
+   END WHERE
+   N1=COUNT(POS==1)
+
+   IF (N1>0) THEN
+      ALLOCATE(FXX(N1,3),T(N1),ALLG(N1,3),INDTS(N1),IND(N1),INDJ(N1))
+      INDTS=PACK(INDT,POS==1)
+      IND=(/(I,I=1,N1)/)
+      T=PACK(TIN,POS==1)
+      FXX=0.0
+      ALLG=0.0
+      IF (NR==1) THEN
+         ALLOCATE(TX2(N1,3),TX4(N1,3),XLA(N1,3),BTEMP(N1))
+         L2=R2(1)+R4(1);L4=R1(1)-R2(1)
+         L24=R1(1)+R4(1)
+         CALL XSPF(N1,L2(1)*T,EPS,TX2)
+         CALL XSPF(N1,L4(1)*T,EPS,TX4)
+         BTEMP=DEXP(-L2(1)*T)*TX4(:,1)
+         XLA(:,1)=T/L24*(TX2(:,1)-BTEMP)
+         XLA(:,2)=T**2/L24*(TX2(:,2)-BTEMP)+XLA(:,1)/L24
+         XLA(:,3)=T**3/L24*(TX2(:,3)-BTEMP)+2.0*XLA(:,2)/L24
+         XLA=R2(1)*R3(1)*XLA
+         FXX=XLA
+         DEALLOCATE(TX2,TX4,XLA,BTEMP)
+      END IF
+
+      IF (NR>1) THEN
+         NR2=2*NR-1
+         XX=TCHANGE(2)-TCHANGE(1)
+         TMAX=DMAX1(MAXVAL(T),XX*REAL(NR2-1,8))+1.0
+         TT(0:(NR-1))=TCHANGE(:)
+         DO I=NR,NR2-1,1
+            TT(I)=REAL(I,8)*XX
+         END DO
+         TT(0)=-0.00000001
+         TT(NR2)=TMAX
+
+         PR1=1.0;PR2=1.0;PR4=1.0
+         CALL XPWE(NR,NR,TT(1:NR),R1,TCHANGE,PR1(1:NR,:))  !a1=PR1(:,5)
+         CALL XPWE(NR,NR,TT(1:NR),R2,TCHANGE,PR2(1:NR,:))  !a2=PR2(:,5)
+         CALL XPWE(NR,NR,TT(1:NR),R4,TCHANGE,PR4(1:NR,:))  !a4=PR4(:,5)
+
+         ! G2jk
+         DO J=2,NR,1
+            J1=J-1;INDJ=0
+            WHERE (T>=TT(J))
+               INDJ=2
+            ELSEWHERE (T>=TT(J1))
+               INDJ=1
+            END WHERE
+            SINDJ2=COUNT(INDJ==2)  !HOW MANY ELEMENTS IN T THAT ARE GREATER THAN TT(J)
+            SINDJ1=COUNT(INDJ==1)  !HOW MANY ELEMENTS IN T THAT ARE BETWEEN TT(J1) AND TT(J)
+            SINDJ0=COUNT(INDJ==0)  !HOW MANY ELEMENTS IN T THAT ARE LESS THAN TT(J1)
+            IF (SINDJ0<N1) THEN
+               DO K=1,J1,1
+                  L2=R2(K)+R4(J);L4=R1(J-K)-R2(K)
+                  L24=R1(J-K)+R4(J)
+                  CALL XSPF(1,L4*XX,EPS,TX40)
+                  !ATEMP=PR1(J-K-1,5)*PR2(K,5)*PR4(J1,5)*R2(K)*R3(J-K)  !CHANGED
+                  ATEMP=PR1(J-K-1,5)*PR2(K,5)*PR4(J1,5)*R3(J-K)*R5(J)*R6(K)  
+
+                  IF (SINDJ2>0) THEN
+                     ALLOCATE(INDS(SINDJ2))
+		                 INDS=PACK(IND,INDJ==2)
+                     CALL XSPF(1,L2*XX,EPS,TX20)
+                     ATEMP1=DEXP(-L2(1)*XX)*TX40(1,1)
+                     TA(1)=XX/L24*(TX20(1,1)-ATEMP1)
+                     TA(2)=XX**2/L24*(TX20(1,2)-ATEMP1)+TA(1)/L24
+                     TA(3)=XX**3/L24*(TX20(1,3)-ATEMP1)+2.0*TA(2)/L24
+
+                     TB(1)=TX20(1,1)
+                     TB(2)=XX*TX20(1,2)
+                     TB(3)=XX**2*TX20(1,3)
+                     TB=TX40(1,1)*XX**2*TB
+
+                     TC=TB-TA
+                     ALLG(INDS,1)=TC(1)
+                     ALLG(INDS,2)=TC(2)+TT(J1)*TC(1)
+                     ALLG(INDS,3)=TC(3)+2.0*TT(J1)*TC(2)+TT(J1)**2*TC(1)
+
+                     FXX(INDS,:)=FXX(INDS,:)+ATEMP*ALLG(INDS,:)
+		                 DEALLOCATE(INDS)
+                  END IF
+
+                  IF (SINDJ1>0) THEN
+		                 ALLOCATE(INDS(SINDJ1),TJ(SINDJ1),TX2(SINDJ1,3),TX4(SINDJ1,3),BTEMP(SINDJ1),XLA(SINDJ1,3))
+		                 INDS=PACK(IND,INDJ==1)
+                     TJ=T(INDS)-TT(J1)
+                     CALL XSPF(SINDJ1,L2(1)*TJ,EPS,TX2)
+                     CALL XSPF(SINDJ1,L4(1)*TJ,EPS,TX4)
+                     BTEMP=DEXP(-L2(1)*TJ)*TX4(:,1)
+
+                     XLA(:,1)=TJ/L24*(TX2(:,1)-BTEMP)
+                     XLA(:,2)=TJ**2/L24*(TX2(:,2)-BTEMP)+XLA(:,1)/L24
+                     XLA(:,3)=TJ**3/L24*(TX2(:,3)-BTEMP)+2.0*XLA(:,2)/L24
+
+                     XLA(:,1)=TX40(1,1)*XX*TJ*TX2(:,1)-XLA(:,1)
+                     XLA(:,2)=TX40(1,1)*XX*TJ**2*TX2(:,2)-XLA(:,2)
+                     XLA(:,3)=TX40(1,1)*XX*TJ**3*TX2(:,3)-XLA(:,3)
+
+                     ALLG(INDS,1)=XLA(:,1)
+                     ALLG(INDS,2)=XLA(:,2)+TT(J1)*XLA(:,1)
+                     ALLG(INDS,3)=XLA(:,3)+2.0*TT(J1)*XLA(:,2)+TT(J1)**2*XLA(:,1)
+
+                     FXX(INDS,:)=FXX(INDS,:)+ATEMP*ALLG(INDS,:)
+		                 DEALLOCATE(INDS,TJ,TX2,TX4,BTEMP,XLA)
+                  END IF
+               END DO
+            END IF
+         END DO
+
+         ! G1jk K=1,NR-1,J=K,NR-1
+         DO J=1,NR-1,1
+            J1=J-1;INDJ=0
+            WHERE (T>=TT(J))
+               INDJ=2
+            ELSEWHERE (T>=TT(J1))
+               INDJ=1
+            END WHERE
+            SINDJ2=COUNT(INDJ==2)  !HOW MANY ELEMENTS IN T THAT ARE GREATER THAN TT(J)
+            SINDJ1=COUNT(INDJ==1)  !HOW MANY ELEMENTS IN T THAT ARE BETWEEN TT(J1) AND TT(J)
+            SINDJ0=COUNT(INDJ==0)  !HOW MANY ELEMENTS IN T THAT ARE LESS THAN TT(J1)
+            IF (SINDJ0<N1) THEN
+               DO K=1,J,1
+                  L2=R2(K)+R4(J);L4=R1(J-K+1)-R2(K)
+                  L24=R1(J-K+1)+R4(J)
+                  !ATEMP=PR1(J-K,5)*PR2(K-1,5)*PR4(J1,5)*R2(K)*R3(J-K+1) !CHANGED
+                  ATEMP=PR1(J-K,5)*PR2(K-1,5)*PR4(J1,5)*R3(J-K+1)*R5(J)*R6(K) 
+
+                  IF (SINDJ2>0) THEN
+		                 ALLOCATE(INDS(SINDJ2))
+		                 INDS=PACK(IND,INDJ==2)
+                     CALL XSPF(1,L4*XX,EPS,TX40)
+                     CALL XSPF(1,L2*XX,EPS,TX20)
+                     ATEMP1=DEXP(-L2(1)*XX)*TX40(1,1)
+                     TA(1)=XX/L24*(TX20(1,1)-ATEMP1)
+                     TA(2)=XX**2/L24*(TX20(1,2)-ATEMP1)+TA(1)/L24
+                     TA(3)=XX**3/L24*(TX20(1,3)-ATEMP1)+2.0*TA(2)/L24
+
+                     ALLG(INDS,1)=TA(1)
+		                 ALLG(INDS,2)=TA(2)+TT(J1)*TA(1)
+		                 ALLG(INDS,3)=TA(3)+2.0*TT(J1)*TA(2)+TT(J1)**2*TA(1)
+
+                     FXX(INDS,:)=FXX(INDS,:)+ATEMP*ALLG(INDS,:)
+		                 DEALLOCATE(INDS)
+                  END IF
+
+                  IF (SINDJ1>0) THEN
+   	                 ALLOCATE(INDS(SINDJ1),TJ(SINDJ1),TX2(SINDJ1,3),TX4(SINDJ1,3),BTEMP(SINDJ1),XLA(SINDJ1,3))
+		                 INDS=PACK(IND,INDJ==1)
+                     TJ=T(INDS)-TT(J1)
+                     CALL XSPF(SINDJ1,L2(1)*TJ,EPS,TX2)
+                     CALL XSPF(SINDJ1,L4(1)*TJ,EPS,TX4)
+                     BTEMP=DEXP(-L2(1)*TJ)*TX4(:,1)
+
+                     XLA(:,1)=TJ/L24*(TX2(:,1)-BTEMP)
+                     XLA(:,2)=TJ**2/L24*(TX2(:,2)-BTEMP)+XLA(:,1)/L24
+                     XLA(:,3)=TJ**3/L24*(TX2(:,3)-BTEMP)+2.0*XLA(:,2)/L24
+
+                     ALLG(INDS,1)=XLA(:,1)
+                     ALLG(INDS,2)=XLA(:,2)+TT(J1)*XLA(:,1)
+                     ALLG(INDS,3)=XLA(:,3)+2.0*TT(J1)*XLA(:,2)+TT(J1)**2*XLA(:,1)
+
+                     FXX(INDS,:)=FXX(INDS,:)+ATEMP*ALLG(INDS,:)
+		                 DEALLOCATE(INDS,TJ,TX2,TX4,BTEMP,XLA)
+                  END IF
+               END DO
+            END IF
+         END DO
+
+
+         ! G1jk K=1,NR-1,J=NR,NR+K-2 SET J=J-NR+1
+        IF (NR>2) THEN
+         DO J=1,NR-2,1
+            JM=J+NR-1;JM1=JM-1;INDJ=0
+            WHERE (T>=TT(JM+1))
+               INDJ=3
+            ELSEWHERE (T>=TT(JM))
+               INDJ=2
+            ELSEWHERE (T>=TT(JM1))
+               INDJ=1
+            END WHERE
+            SINDJ3=COUNT(INDJ==3)  !HOW MANY ELEMENTS IN T THAT ARE GREATER THAN TT(J+1)
+            SINDJ2=COUNT(INDJ==2)  !HOW MANY ELEMENTS IN T THAT ARE BETWEEN TT(J) AND TT(J+1)
+            SINDJ1=COUNT(INDJ==1)  !HOW MANY ELEMENTS IN T THAT ARE BETWEEN TT(J1) AND TT(J)
+            SINDJ0=COUNT(INDJ==0)  !HOW MANY ELEMENTS IN T THAT ARE LESS THAN TT(J1)
+            IF (SINDJ0<N1) THEN
+               DO K=J+1,NR-1,1
+                  L2=R2(K)+R4(NR);L4=R1(J+NR-K)-R2(K)
+                  L24=R1(J+NR-K)+R4(NR)
+                  !ATEMP=PR1(JM-K,5)*PR2(K-1,5)*PR4(NR-1,5)*R2(K)*R3(JM-K+1) !CHANGED
+                  ATEMP=PR1(JM-K,5)*PR2(K-1,5)*PR4(NR-1,5)*R3(JM-K+1)*R5(NR)*R6(K)
+                  
+                  ATEMP1=DEXP(-R4(NR)*REAL(J-1,8)*XX)
+                  ATEMP2=DEXP(-R4(NR)*REAL(J,8)*XX-R2(K)*XX)
+
+                  IF (SINDJ3>0) THEN
+		                 ALLOCATE(INDS(SINDJ3))
+		                 INDS=PACK(IND,INDJ==3)
+                     CALL XSPF(1,L4*XX,EPS,TX40)
+                     CALL XSPF(1,L2*XX,EPS,TX20)
+                     ATEMP3=DEXP(-L2(1)*XX)*TX40(1,1)
+                     TA(1)=XX/L24*(TX20(1,1)-ATEMP3)
+                     TA(2)=XX**2/L24*(TX20(1,2)-ATEMP3)+TA(1)/L24
+                     TA(3)=XX**3/L24*(TX20(1,3)-ATEMP3)+2.0*TA(2)/L24
+
+                     ALLG(INDS,1)=ATEMP1*TA(1)-ATEMP2*TA(1)+ATEMP2*TX40(1,1)*XX**2*TX20(1,1)
+
+                     ALLG(INDS,2)=ATEMP1*(TA(2)+TT(JM1)*TA(1))
+                     ALLG(INDS,2)=ALLG(INDS,2)-ATEMP2*(TA(2)+TT(JM)*TA(1))
+                     ALLG(INDS,2)=ALLG(INDS,2)+ATEMP2*TX40(1,1)*XX**2*(XX*TX20(1,2)+TT(JM)*TX20(1,1))
+
+                     ALLG(INDS,3)=ATEMP1*(TA(3)+2.0*TT(JM1)*TA(2)+TT(JM1)**2*TA(1))
+                     ALLG(INDS,3)=ALLG(INDS,3)-ATEMP2*(TA(3)+2.0*TT(JM)*TA(2)+TT(JM)**2*TA(1))
+                     ALLG(INDS,3)=ALLG(INDS,3)+ATEMP2*TX40(1,1)*XX**2*(XX**2*TX20(1,3))
+                     ALLG(INDS,3)=ALLG(INDS,3)+ATEMP2*TX40(1,1)*XX**2*(2.0*TT(JM)*XX*TX20(1,2))
+                     ALLG(INDS,3)=ALLG(INDS,3)+ATEMP2*TX40(1,1)*XX**2*(TT(JM)**2*TX20(1,1))
+
+                     FXX(INDS,:)=FXX(INDS,:)+ATEMP*ALLG(INDS,:)
+		                 DEALLOCATE(INDS)
+                  END IF
+
+                  IF (SINDJ2>0) THEN
+		                 ALLOCATE(INDS(SINDJ2),TJ(SINDJ2),TX2(SINDJ2,3),TX4(SINDJ2,3),BTEMP(SINDJ2),XLA(SINDJ2,3))
+		                 INDS=PACK(IND,INDJ==2)
+                     TJ=T(INDS)-TT(JM)
+                     CALL XSPF(1,L4*XX,EPS,TX40)
+                     CALL XSPF(1,L2*XX,EPS,TX20)
+                     ATEMP3=DEXP(-L2(1)*XX)*TX40(1,1)
+                     TA(1)=XX/L24*(TX20(1,1)-ATEMP3)
+                     TA(2)=XX**2/L24*(TX20(1,2)-ATEMP3)+TA(1)/L24
+                     TA(3)=XX**3/L24*(TX20(1,3)-ATEMP3)+2.0*TA(2)/L24
+
+                     CALL XSPF(SINDJ2,L2(1)*TJ,EPS,TX2)
+                     CALL XSPF(SINDJ2,L4(1)*TJ,EPS,TX4)
+                     BTEMP=DEXP(-L2(1)*TJ)*TX4(:,1)
+                     XLA(:,1)=TJ/L24*(TX2(:,1)-BTEMP)
+                     XLA(:,2)=TJ**2/L24*(TX2(:,2)-BTEMP)+XLA(:,1)/L24
+                     XLA(:,3)=TJ**3/L24*(TX2(:,3)-BTEMP)+2.0*XLA(:,2)/L24
+
+                     ALLG(INDS,1)=ATEMP1*TA(1)-ATEMP2*XLA(:,1)+ATEMP2*TX40(1,1)*XX*TJ*TX2(:,1)
+                     ALLG(INDS,2)=ATEMP1*(TA(2)+TT(JM1)*TA(1))
+                     ALLG(INDS,2)=ALLG(INDS,2)-ATEMP2*(XLA(:,2)+TT(JM)*XLA(:,1))
+                     ALLG(INDS,2)=ALLG(INDS,2)+ATEMP2*TX40(1,1)*XX*TJ*(TJ*TX2(:,2)+TT(JM)*TX2(:,1))
+
+                     ALLG(INDS,3)=ATEMP1*(TA(3)+2.0*TT(JM1)*TA(2)+TT(JM1)**2*TA(1))
+                     ALLG(INDS,3)=ALLG(INDS,3)-ATEMP2*(XLA(:,3)+2.0*TT(JM)*XLA(:,2)+TT(JM)**2*XLA(:,1))
+                     ALLG(INDS,3)=ALLG(INDS,3)+ATEMP2*TX40(1,1)*XX*TJ*(TJ**2*TX2(:,3))
+                     ALLG(INDS,3)=ALLG(INDS,3)+ATEMP2*TX40(1,1)*XX*TJ*(2.0*TT(JM)*TJ*TX2(:,2))
+                     ALLG(INDS,3)=ALLG(INDS,3)+ATEMP2*TX40(1,1)*XX*TJ*(TT(JM)**2*TX2(:,1))
+
+                     FXX(INDS,:)=FXX(INDS,:)+ATEMP*ALLG(INDS,:)
+		                 DEALLOCATE(INDS,TJ,TX2,TX4,BTEMP,XLA)
+                  END IF
+
+                  IF (SINDJ1>0) THEN
+   		               ALLOCATE(INDS(SINDJ1),TJ(SINDJ1),TX2(SINDJ1,3),TX4(SINDJ1,3),BTEMP(SINDJ1),XLA(SINDJ1,3))
+		                 INDS=PACK(IND,INDJ==1)
+                     TJ=T(INDS)-TT(JM1)
+                     CALL XSPF(SINDJ1,L2(1)*TJ,EPS,TX2)               !b2$fxi=PX2(:,i)
+                     CALL XSPF(SINDJ1,L4(1)*TJ,EPS,TX4)               !b4$fxi=PX4(:,i)
+                     BTEMP=DEXP(-L2(1)*TJ)*TX4(:,1)
+
+                     XLA(:,1)=TJ/L24*(TX2(:,1)-BTEMP)
+                     XLA(:,2)=TJ**2/L24*(TX2(:,2)-BTEMP)+XLA(:,1)/L24
+                     XLA(:,3)=TJ**3/L24*(TX2(:,3)-BTEMP)+2.0*XLA(:,2)/L24
+
+                     ALLG(INDS,1)=XLA(:,1)
+                     ALLG(INDS,2)=XLA(:,2)+TT(JM1)*XLA(:,1)
+                     ALLG(INDS,3)=XLA(:,3)+2.0*TT(JM1)*XLA(:,2)+TT(JM1)**2*XLA(:,1)
+
+                     FXX(INDS,:)=FXX(INDS,:)+ATEMP*ATEMP1*ALLG(INDS,:)
+		                 DEALLOCATE(INDS,TJ,TX2,TX4,BTEMP,XLA)
+                  END IF
+               END DO
+            END IF
+         END DO
+        END IF
+
+         ! G1jk K=NR,J=NR,NR+K-2 SET J=J-NR+1
+         DO J=1,NR-1,1
+            JM=J+NR-1;JM1=JM-1;INDJ=0
+            WHERE (T>=TT(JM))
+               INDJ=2
+            ELSEWHERE (T>=TT(JM1))
+               INDJ=1
+            END WHERE
+            SINDJ2=COUNT(INDJ==2)  !HOW MANY ELEMENTS IN T THAT ARE GREATER THAN TT(J)
+            SINDJ1=COUNT(INDJ==1)  !HOW MANY ELEMENTS IN T THAT ARE BETWEEN TT(J1) AND TT(J)
+            SINDJ0=COUNT(INDJ==0)  !HOW MANY ELEMENTS IN T THAT ARE LESS THAN TT(J1)
+            IF (SINDJ0<N1) THEN
+               DO K=NR,NR,1
+                  L2=R2(K)+R4(NR);L4=R1(J+NR-K)-R2(K)
+                  L24=R1(J+NR-K)+R4(NR)
+                  !ATEMP=PR1(JM-K,5)*PR2(K-1,5)*PR4(NR-1,5)*R2(K)*R3(JM-K+1) !CHANGED
+                  ATEMP=PR1(JM-K,5)*PR2(K-1,5)*PR4(NR-1,5)*R3(JM-K+1)*R5(NR)*R6(K)  
+                  
+                  ATEMP1=DEXP(-R4(NR)*REAL(J-1,8)*XX)
+                  ATEMP2=DEXP(-R4(NR)*REAL(J,8)*XX-R2(K)*XX)
+
+                  IF (SINDJ2>0) THEN
+		                 ALLOCATE(INDS(SINDJ2),TJ(SINDJ2),TX2(SINDJ2,3))
+		                 INDS=PACK(IND,INDJ==2)
+                     TJ=T(INDS)-TT(JM)
+                     CALL XSPF(1,L4*XX,EPS,TX40)
+                     CALL XSPF(1,L2*XX,EPS,TX20)
+                     ATEMP3=DEXP(-L2(1)*XX)*TX40(1,1)
+                     TA(1)=XX/L24*(TX20(1,1)-ATEMP3)
+                     TA(2)=XX**2/L24*(TX20(1,2)-ATEMP3)+TA(1)/L24
+                     TA(3)=XX**3/L24*(TX20(1,3)-ATEMP3)+2.0*TA(2)/L24
+
+                     CALL XSPF(SINDJ2,L2(1)*TJ,EPS,TX2)
+
+                     ALLG(INDS,1)=ATEMP1*TA(1)+ATEMP2*TX40(1,1)*XX*TJ*TX2(:,1)
+                     ALLG(INDS,2)=ATEMP1*(TA(2)+TT(JM1)*TA(1))
+                     ALLG(INDS,2)=ALLG(INDS,2)+ATEMP2*TX40(1,1)*XX*TJ*(TJ*TX2(:,2)+TT(JM)*TX2(:,1))
+
+                     ALLG(INDS,3)=ATEMP1*(TA(3)+2.0*TT(JM1)*TA(2)+TT(JM1)**2*TA(1))
+                     ALLG(INDS,3)=ALLG(INDS,3)+ATEMP2*TX40(1,1)*XX*TJ*(TJ**2*TX2(:,3))
+                     ALLG(INDS,3)=ALLG(INDS,3)+ATEMP2*TX40(1,1)*XX*TJ*(2.0*TT(JM)*TJ*TX2(:,2))
+                     ALLG(INDS,3)=ALLG(INDS,3)+ATEMP2*TX40(1,1)*XX*TJ*(TT(JM)**2*TX2(:,1))
+
+                     FXX(INDS,:)=FXX(INDS,:)+ATEMP*ALLG(INDS,:)
+		                 DEALLOCATE(INDS,TJ,TX2)
+                  END IF
+
+                  IF (SINDJ1>0) THEN
+   		               ALLOCATE(INDS(SINDJ1),TJ(SINDJ1),TX2(SINDJ1,3),TX4(SINDJ1,3),BTEMP(SINDJ1),XLA(SINDJ1,3))
+		                 INDS=PACK(IND,INDJ==1)
+                     TJ=T(INDS)-TT(JM1)
+                     CALL XSPF(SINDJ1,L2(1)*TJ,EPS,TX2)               !b2$fxi=PX2(:,i)
+                     CALL XSPF(SINDJ1,L4(1)*TJ,EPS,TX4)               !b4$fxi=PX4(:,i)
+                     BTEMP=DEXP(-L2(1)*TJ)*TX4(:,1)
+
+                     XLA(:,1)=TJ/L24*(TX2(:,1)-BTEMP)
+                     XLA(:,2)=TJ**2/L24*(TX2(:,2)-BTEMP)+XLA(:,1)/L24
+                     XLA(:,3)=TJ**3/L24*(TX2(:,3)-BTEMP)+2.0*XLA(:,2)/L24
+
+                     ALLG(INDS,1)=XLA(:,1)
+                     ALLG(INDS,2)=XLA(:,2)+TT(JM1)*XLA(:,1)
+                     ALLG(INDS,3)=XLA(:,3)+2.0*TT(JM1)*XLA(:,2)+TT(JM1)**2*XLA(:,1)
+
+                     FXX(INDS,:)=FXX(INDS,:)+ATEMP*ATEMP1*ALLG(INDS,:)
+		                 DEALLOCATE(INDS,TJ,TX2,TX4,BTEMP,XLA)
+                  END IF
+               END DO
+            END IF
+         END DO
+
+
+         ! G1jk K=1,NR,J=NR+K-1 SET J=J-K+1 SO J=NR
+         DO K=1,NR,1
+            JM=NR+K-1;JM1=JM-1;INDJ=0
+            WHERE (T>=TT(JM))
+               INDJ=2
+            ELSEWHERE (T>=TT(JM1))
+               INDJ=1
+            END WHERE
+            SINDJ2=COUNT(INDJ==2)  !HOW MANY ELEMENTS IN T THAT ARE GREATER THAN TT(J)
+            SINDJ1=COUNT(INDJ==1)  !HOW MANY ELEMENTS IN T THAT ARE BETWEEN TT(J1) AND TT(J)
+            SINDJ0=COUNT(INDJ==0)  !HOW MANY ELEMENTS IN T THAT ARE LESS THAN TT(J1)
+            IF (SINDJ0<N1) THEN
+               L2=R2(K)+R4(NR);L4=R1(NR)-R2(K)
+               L24=R1(NR)+R4(NR)
+               !ATEMP=PR1(NR-1,5)*PR2(K-1,5)*PR4(NR-1,5)*R2(K)*R3(NR) !CHANGED
+               ATEMP=PR1(NR-1,5)*PR2(K-1,5)*PR4(NR-1,5)*R3(NR)*R5(NR)*R6(K)
+               
+               ATEMP1=DEXP(-R4(NR)*REAL(K-1,8)*XX)
+               ATEMP2=DEXP(-R4(NR)*REAL(K,8)*XX-R2(K)*XX)
+               IF (SINDJ2>0) THEN
+		              ALLOCATE(INDS(SINDJ2),TJ(SINDJ2),TX2(SINDJ2,3),TX4(SINDJ2,3),BTEMP(SINDJ2),XLA(SINDJ2,3),XLB(SINDJ2,3))
+		              INDS=PACK(IND,INDJ==2)
+                  TJ=T(INDS)-TT(JM1)
+                  CALL XSPF(SINDJ2,L4(1)*TJ,EPS,TX4)
+                  CALL XSPF(SINDJ2,L2(1)*TJ,EPS,TX2)
+                  BTEMP=DEXP(-L2(1)*TJ)*TX4(:,1)
+
+                  XLA(:,1)=TJ/L24*(TX2(:,1)-BTEMP)
+                  XLA(:,2)=TJ**2/L24*(TX2(:,2)-BTEMP)+XLA(:,1)/L24
+                  XLA(:,3)=TJ**3/L24*(TX2(:,3)-BTEMP)+2.0*XLA(:,2)/L24
+
+                  TJ=T(INDS)-TT(JM)
+                  CALL XSPF(SINDJ2,L4(1)*TJ,EPS,TX4)
+                  CALL XSPF(SINDJ2,L2(1)*TJ,EPS,TX2)
+                  BTEMP=DEXP(-L2(1)*TJ)*TX4(:,1)
+
+                  XLB(:,1)=TJ/L24*(TX2(:,1)-BTEMP)
+                  XLB(:,2)=TJ**2/L24*(TX2(:,2)-BTEMP)+XLB(:,1)/L24
+                  XLB(:,3)=TJ**3/L24*(TX2(:,3)-BTEMP)+2.0*XLB(:,2)/L24
+
+                  ALLG(INDS,1)=ATEMP1*XLA(:,1)-ATEMP2*XLB(:,1)
+                  ALLG(INDS,2)=ATEMP1*(XLA(:,2)+TT(JM1)*XLA(:,1))-ATEMP2*(XLB(:,2)+TT(JM)*XLB(:,1))
+                  ALLG(INDS,3)=ATEMP1*(XLA(:,3)+2.0*TT(JM1)*XLA(:,2)+TT(JM1)**2*XLA(:,1))
+                  ALLG(INDS,3)=ALLG(INDS,3)-ATEMP2*(XLB(:,3)+2.0*TT(JM)*XLB(:,2)+TT(JM)**2*XLB(:,1))
+
+                  FXX(INDS,:)=FXX(INDS,:)+ATEMP*ALLG(INDS,:)
+                  DEALLOCATE(INDS,TJ,TX2,TX4,BTEMP,XLA,XLB)
+               END IF
+
+               IF (SINDJ1>0) THEN
+	                ALLOCATE(INDS(SINDJ1),TJ(SINDJ1),TX2(SINDJ1,3),TX4(SINDJ1,3),BTEMP(SINDJ1),XLA(SINDJ1,3))
+		              INDS=PACK(IND,INDJ==1)
+                  TJ=T(INDS)-TT(JM1)
+                  CALL XSPF(SINDJ1,L4(1)*TJ,EPS,TX4)
+                  CALL XSPF(SINDJ1,L2(1)*TJ,EPS,TX2)
+                  BTEMP=DEXP(-L2(1)*TJ)*TX4(:,1)
+
+                  XLA(:,1)=TJ/L24*(TX2(:,1)-BTEMP)
+                  XLA(:,2)=TJ**2/L24*(TX2(:,2)-BTEMP)+XLA(:,1)/L24
+                  XLA(:,3)=TJ**3/L24*(TX2(:,3)-BTEMP)+2.0*XLA(:,2)/L24
+
+                  ALLG(INDS,1)=XLA(:,1)
+                  ALLG(INDS,2)=(XLA(:,2)+TT(JM1)*XLA(:,1))
+                  ALLG(INDS,3)=(XLA(:,3)+2.0*TT(JM1)*XLA(:,2)+TT(JM1)**2*XLA(:,1))
+
+                  FXX(INDS,:)=FXX(INDS,:)+ATEMP*ATEMP1*ALLG(INDS,:)
+		              DEALLOCATE(INDS,TJ,TX2,TX4,BTEMP,XLA)
+               END IF
+            END IF
+         END DO
+      END IF
+      FX(INDTS,1)=FXX(:,1)
+      FX(INDTS,2)=FXX(:,2)
+      FX(INDTS,3)=FXX(:,3)
+      DEALLOCATE(FXX,T,ALLG,INDTS,IND,INDJ)
+   END IF
+   RETURN
+END SUBROUTINE XPWEFV6
+
+!!!Added 3/24/2018
+SUBROUTINE SOLVEABC(NT,NP,T,PHIT,WEIGHT,A0,B0,C1,C2,Q,QFLAT,PHIFLAT)
+!DEC$ ATTRIBUTES DLLEXPORT,C,REFERENCE,ALIAS:'solveabc_'::SOLVEABC
+   IMPLICIT NONE
+   INTEGER,INTENT(IN)::NT,NP
+   REAL(8),INTENT(IN)::T(NT),PHIT(NT),WEIGHT(NT),A0(NP),B0(NP),C1,C2
+   REAL(8),INTENT(OUT)::Q(NP),QFLAT(NP),PHIFLAT(NP)
+
+   INTEGER::I,J,K
+   REAL(8)::TEMP1(NT),TEMP2(NT),M1,M2,M3,TT(NT),WT
+
+   TT=(T-C1)/(C2-C1)
+   Q=0.0;WT=SUM(WEIGHT)
+   DO I=1,NP,1
+      TEMP1=(1.0-TT**A0(I)+TT**B0(I))
+      TEMP2=TEMP1/PHIT
+      M1=SUM(WEIGHT*TEMP1)/WT
+      M2=SUM(WEIGHT*TEMP2)/WT
+      M3=SUM(WEIGHT*PHIT)/WT
+      QFLAT(I)=SUM(WEIGHT*(TEMP1-M1)**2)/WT
+      QFLAT(I)=DSQRT(QFLAT(I))/M1
+      Q(I)=SUM(WEIGHT*(TEMP2-M2)**2)/WT
+      Q(I)=DSQRT(Q(I))/M2
+      PHIFLAT(I)=SUM(WEIGHT*(PHIT-M3)**2)/WT
+      PHIFLAT(I)=DSQRT(PHIFLAT(I))
+   END DO
+   RETURN
+END SUBROUTINE SOLVEABC

@@ -4,7 +4,7 @@
 \description{A function to calculate the weighted log-rank statistics and their varainces given the weights including 
 log-rank, gehan, Tarone-Ware, Peto-Peto, mPeto-Peto and Fleming-Harrington}
 \usage{
-wlrcom(y,d,z,tfix=max(y),p=c(1),q=c(1))
+wlrcom(y,d,z,tfix=max(y),p=c(1),q=c(1),eps=1.0e-08)
 }
 \arguments{
   \item{y}{observed times}
@@ -13,8 +13,9 @@ wlrcom(y,d,z,tfix=max(y),p=c(1),q=c(1))
   \item{tfix}{time point at which weighted log-rank is calculated}
   \item{p}{a vector of power numbers for S in the Fleming-Harrington weight}
   \item{q}{a vector of power numbers for 1-S in the Fleming-Harrington weight, \code{q} and \code{p} should have the same length}
+  \item{eps}{the error tolerance when comparing event times}
 }
-\details{More details}
+\details{V1:3/21/2018}
 \value{
   \item{n}{total number of subjects, combined groups}
   \item{test}{unscaled test statistics}

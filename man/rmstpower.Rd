@@ -4,7 +4,7 @@
 \description{A function to calculate powers at different cut-points based on difference of restricted mean survival times (RMST)
 account for delayed treatment, discontinued treatment and non-uniform entry}
 \usage{
-rmstpower(tfix=2,tcut=seq(tfix,tfix+2,by=0.5),alpha=0.05,twosided=1,
+rmstpower(tcut=2,tstudy=seq(tcut,tcut+2,by=0.5),alpha=0.05,twosided=1,
           taur=1.2,u=c(1/taur,1/taur),ut=c(taur/2,taur),pi1=0.5,
           rate11=c(1,0.5),rate21=rate11,rate31=c(0.7,0.4),
           rate41=rate21,rate51=rate21,ratec1=c(0.5,0.6),
@@ -14,8 +14,8 @@ rmstpower(tfix=2,tcut=seq(tfix,tfix+2,by=0.5),alpha=0.05,twosided=1,
           eps=1.0e-2,veps=1.0e-2,n=1000)
 }
 \arguments{
-  \item{tfix}{timepoint at which rmst is calculated}
-  \item{tcut}{a vector of cut-points, the cut-points must be not smaller than \code{tfix}}
+  \item{tcut}{timepoint at which rmst is calculated}
+  \item{tstudy}{a vector of study time points, which must be not smaller than \code{tcut}}
   \item{alpha}{type-1 error rate}
   \item{twosided}{twosided test=1 or not}
   \item{taur}{Recruitment time}
@@ -61,8 +61,8 @@ Luo, et al. (2017)
 \author{Xiaodong Luo}
 \note{This calculates the restricted mean survival times between the treatment and control groups and their standard errors}
 \examples{
-tfix<-3.0
-tcut<-seq(3,6,by=1)
+tcut<-3.0
+tstudy<-seq(3,6,by=1)
 taur<-1.2
 u<-c(1/taur,1/taur)
 ut<-c(taur/2,taur)
@@ -76,13 +76,13 @@ r20<-r10
 r30<-c(0.02,0.01)
 r40<-r50<-r20
 rc0<-c(0.02,0.01)
-getrmst<-rmstpower(tfix=tfix,tcut=tcut,alpha=0.05,twosided=1,
+getrmst<-rmstpower(tcut=tcut,tstudy=tstudy,alpha=0.05,twosided=1,
           taur=taur,u=u,ut=ut,pi1=0.5,
           rate11=r11,rate21=r21,rate31=r31,rate41=r41,rate51=r51,ratec1=rc1,
           rate10=r10,rate20=r20,rate30=r30,rate40=r40,rate50=r50,ratec0=rc0,
           tchange=c(0,1),type1=1,type0=1,rp21=0.5,rp20=0.5,n=1000)
 ###powers at each time point
-cbind(tcut,getrmst$power)
+cbind(tstudy,getrmst$power)
 }
 \keyword{piecewise exponential distribution}
 \keyword{crossover effect}

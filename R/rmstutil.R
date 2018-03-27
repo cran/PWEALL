@@ -2,16 +2,18 @@
 #   A utility function to calculate the true restricted mean survival time (RMST) and its variance
 #     account for delayed treatment, discontinued treatment and non-uniform entry
 #   version 1.0 (07/13/2017)
+#   version 2.0 (12/20/2017) #"tfix" is changed to "tcut", "tcut" is changed to "tstudy"   
 #   
 #   
 ############################################################################################################################
-rmstutil<-function(tfix=2.0,tcut=5.0,taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur),
+#rmstutil<-function(tfix=2.0,tcut=5.0,taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur),
+rmstutil<-function(tcut=2.0,tstudy=5.0,taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur),
                      rate1=c(1,0.5),rate2=rate1,rate3=c(0.7,0.4),
                      rate4=rate2,rate5=rate2,ratec=c(0.5,0.6),
                      tchange=c(0,1),type=1,rp2=0.5,
                      eps=1.0e-2,veps=1.0e-2){
-  ##tfix: the time points where the restricted mean survival time (RMST) is calculated
-  ##tcut: the analysis cut-off point from first patient in, it must be larger than tfix. Combining with the recruitment curve, 
+  ##tcut: the cut-point where the restricted mean survival times (RMST) is calculated
+  ##tstudy: the study time point from the first patient in, it must be larger than tcut. Combining with the recruitment curve, 
   ##      this impacts the censoring distribution and the variance of the RMST
   ##taur: recruitment period
   ##u,ut: recruitment curves
@@ -26,19 +28,19 @@ rmstutil<-function(tfix=2.0,tcut=5.0,taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur)
   ##eps,veps: error tolerance for numerical integration
   ##rp2: re-randomization prob
   
-  tin<-c(tfix)
+  tin<-c(tcut)
   r1<-rate1;r2<-rate2;r3<-rate3;r4<-rate4;r5<-rate5;rc<-rep(0,length(tchange));
   ### The integration
   a2<-pwefv2(t=tin,rate1=r1,rate2=(r1+r3+rc),tchange=tchange,eps=eps)
   a4<-pwefvplus(t=tin,rate1=r1,rate2=r2,rate3=r3,rate4=r4,rate5=r5,rate6=rc,tchange=tchange,type=type,rp2=rp2,eps=eps)
-  Lrmst<-tfix-tfix*(a2$f0[1]+a4$f0[1])+(a2$f1[1]+a4$f1[1])
+  Lrmst<-tcut-tcut*(a2$f0[1]+a4$f0[1])+(a2$f1[1]+a4$f1[1])
 
   
   ######Part A################################################################################
   ratemax<-max(rate1)+max(rate2)+max(rate3)+max(rate4)+max(rate5)+max(ratec)
   rateb<-max(0.01,min(ratemax,1))
   err<-veps/rateb
-  tmax<-max(c(tfix,tcut,tchange,taur))+err
+  tmax<-max(c(tstudy,tcut,tchange,taur))+err
 
   nr<-length(rate1)
   tplus<-rep(0,nr)
@@ -59,14 +61,14 @@ rmstutil<-function(tfix=2.0,tcut=5.0,taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur)
   ###############################################################################################
 
   #On 8/17/2016 we use this to replace the following
-  atchange1<-sort(unique(c(atchange,tfix),fromLast=T))
+  atchange1<-sort(unique(c(atchange,tstudy),fromLast=T))
   anr<-length(atchange1)+1
   atplus<-rep(0,anr)
   atplus[anr]<-tmax
   atplus[-anr]<-atchange1
 
-  ats<-atplus[atplus<(tfix-0.1*err)]
-  atsupp<-c(ats,tfix)
+  ats<-atplus[atplus<(tstudy-0.1*err)]
+  atsupp<-c(ats,tstudy)
   nsupp<-length(atsupp)
 
   ### The integration
@@ -81,9 +83,9 @@ rmstutil<-function(tfix=2.0,tcut=5.0,taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur)
 
   ST<-pwecx(t=tk,rate1=r1,rate2=r2,rate3=r3,rate4=r4,rate5=r5,tchange=tchange,type=type,rp2=rp2,eps=eps)$surv
   SC<-pwe(t=tk,rate=ratec,tchange=tchange)$surv
-  HT<-pwu(t=tcut-tk,u=u,ut=ut)$dist
-  HTcut<-pwu(t=tcut,u=u,ut=ut)$dist
-  HT[tcut<=tk]<-(-1.0)
+  HT<-pwu(t=tstudy-tk,u=u,ut=ut)$dist
+  HTcut<-pwu(t=tstudy,u=u,ut=ut)$dist
+  HT[tstudy<=tk]<-(-1.0)
 
   ka2<-pwefv2(t=tk,rate1=r1,rate2=(r1+r3+rc),tchange=tchange,eps=eps)
   ka4<-pwefvplus(t=tk,rate1=r1,rate2=r2,rate3=r3,rate4=r4,rate5=r5,rate6=rc,tchange=tchange,type=type,rp2=rp2,eps=eps)
@@ -93,8 +95,8 @@ rmstutil<-function(tfix=2.0,tcut=5.0,taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur)
   temp1<-(Lrmst-Lr)/(ST^2*SC*HT)*dk
   temp2<-(Lrmst-Lr)^2/(ST^2*SC*HT)*dk
   
-  vfix<-HTcut*sum(temp2[tk<=tfix])
-  vadd<-HTcut*sum(temp1[tk<=tfix])
+  vfix<-HTcut*sum(temp2[tk<=tcut])
+  vadd<-HTcut*sum(temp1[tk<=tcut])
   
-  list(tfix=tfix,tcut=tcut,rmst=Lrmst,var=vfix,vadd=vadd)
+  list(tcut=tcut,tstudy=tstudy,rmst=Lrmst,var=vfix,vadd=vadd)
 }

@@ -22,6 +22,7 @@ wlrcal(n=10,te=c(1,2,3),tfix=2.0,dd1=c(1,0,1),dd0=c(0,1,0),r1=c(1,2,3),r0=c(1,2,
   \item{test}{unscaled test statistics}
   \item{var}{variances of the unsclaed test statistics}
   \item{wlr}{weighted log-rank statistics, i.e. scaled test statsitics}
+  \item{wlcor}{the correlation matrix of the weighted log-rank statistics}
 }
 \author{Xiaodong Luo}
 \examples{
