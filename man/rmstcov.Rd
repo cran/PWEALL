@@ -49,7 +49,7 @@ rmstcov(t1cut=2.0,t1study=2.5,t2cut=3.0,t2study=3.5,taur=5,
   \item{cov1}{another covariance of \code{rmst} and \code{rmst1}, should be the same as \code{cov}}
 }
 \references{
-Luo, et al. (2017)
+Luo et al. (2018) Design and monitoring of survival trials in complex scenarios, Statistics in Medicine <doi: https://doi.org/10.1002/sim.7975>.
 }
 \author{Xiaodong Luo}
 \note{This calculates the "true" variance and covariance of restricted mean survival times}

@@ -51,7 +51,7 @@ The hazard functions corresponding to \code{rate11},...,\code{rate51},\code{rate
        \item{iter}{Number of iterations performed}
 }
 \references{
-Luo, et al. (2017)
+Luo et al. (2018) Design and monitoring of survival trials in complex scenarios, Statistics in Medicine <doi: https://doi.org/10.1002/sim.7975>.
 }
 \author{Xiaodong Luo}
 \note{Version 1.0 (7/19/2016)}

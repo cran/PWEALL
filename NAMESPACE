@@ -46,5 +46,3 @@ import("survival")
 importFrom("stats", "pnorm", "qnorm", "rbinom", "runif", "residuals", "rnorm", "dbeta")
 
 
-
-

@@ -21,22 +21,30 @@ pwefvplus(t=seq(0,5,by=0.5),rate1=c(0,5,0.8),rate2=rate1,
   \item{rp2}{re-randomization prob}
   \item{eps}{tolerance}
 }
-\details{Let \eqn{\lambda_1,\ldots,\lambda_6} correspond to \code{rate1},...,\code{rate6}
-When \code{type}=1, we calculate
-\deqn{\int_0^t s^k\lambda_1(s)S_2(s)\int_0^s \lambda_3(u)S_4(u)duds;}
-When \code{type}=2, we calculate
-\deqn{\int_0^t s^kS_4(s)\int_0^s \lambda_3(u)S_1(u)\lambda_2(s-u)S_2(s-u)duds;}
-When \code{type}=2, we calculate
-\deqn{\int_0^t s^kS_4(s)\int_0^s \lambda_3(u)S_1(u)\lambda_2(s-u)S_2(s-u)duds;}
-When \code{type}=3, we calculate
-\deqn{\int_0^t s^k\lambda_4(s)S_4(s)\int_0^s \lambda_3(u)S_1(u)S_2(s-u)duds;}
+\details{Let \eqn{h_1,\ldots,h_6} correspond to \code{rate1},...,\code{rate6}, and \eqn{H_1,\ldots,H_6} be the corresponding survival functions. Also let \eqn{\pi_2=\code{rp2}}.
+when \code{type}=1, we calculate
+\deqn{\int_0^t s^k h_2(s)H_2(s)H_6(s)\int_0^s h_3(u)H_1(u)H_3(u)/H_2(u)duds;}
+when \code{type}=2, we calculate
+\deqn{\int_0^t s^kH_6(s)\int_0^s h_3(u)H_1(u)H_3(u)h_2(s-u)H_2(s-u)duds;}
+when \code{type}=3, we calculate the sum of 
+\deqn{\pi_2\int_0^t s^kH_4^{1-\pi_2}(s)H_6(s)\int_0^s h_3(u)H_1(u)H_3(u)h_2(s-u)H_2^{\pi_2}(s-u)/H_4^{1-\pi_2}(u)duds}
+and 
+\deqn{(1-\pi_2)\int_0^t s^kh_4(s)H_4^{1-\pi_2}(s)H_6(s)\int_0^s h_3(u)H_1(u)H_3(u)H_2^{\pi_2}(s-u)/H_4^{1-\pi_2}(u)duds;}
+when \code{type}=4, we calculate the sum of 
+\deqn{\pi_2\int_0^t s^kH_6(s)\int_0^s h_3(u)H_1(u)H_3(u)h_2(s-u)H_2(s-u)duds}
+and
+\deqn{(1-\pi_2)\int_0^t s^kh_4(s)H_4(s)H_6(s)\int_0^s h_3(u)H_1(u)H_3(u)/H_4(u)duds;}
+when \code{type}=5, we calculate the sum of
+\deqn{\pi_2\int_0^t s^kH_6(s)\int_0^s h_3(u)H_1(u)H_3(u)h_2(s-u)H_2(s-u)duds}
+and
+\deqn{(1-\pi_2)\int_0^t s^kH_6(s)\int_0^s h_3(u)H_1(u)H_3(u)h_4(s-u)H_4(s-u)duds.}
 }
 \value{\item{f0}{values when \eqn{k=0}}
        \item{f1}{values when \eqn{k=1}}
        \item{f2}{values when \eqn{k=2}}
 }
 \references{
-Luo, et al. (2017)
+Luo et al. (2018) Design and monitoring of survival trials in complex scenarios, Statistics in Medicine <doi: https://doi.org/10.1002/sim.7975>.
 }
 \author{Xiaodong Luo}
 \note{This provides the result of the complex integration}

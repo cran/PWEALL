@@ -20,10 +20,12 @@ rate4=rate2,rate5=rate2,tchange=c(0,1),type=1,rp2=0.5)
              for the semi-markov rescue treatment and r4 is hazard for the markov rescue treatment.} 
 }
 \details{More details}
-\value{\item{r}{random numbers}
+\value{\item{r}{random numbers for the event time}
+       \item{rx}{random numbers for the crossover time}
+       \item{cxind}{indicators for the crossover, the first column indicates whether crossover occurs, i.e. \eqn{\code{rx}<\code{r}}. When \code{type}=3,4,5, the second column of \code{cxind} indicates whether it crosses to the arm with \code{rate2}}
 }
 \references{
-Luo, et al. (2017)
+Luo et al. (2018) Design and monitoring of survival trials in complex scenarios, Statistics in Medicine <doi: https://doi.org/10.1002/sim.7975>.
 }
 \author{Xiaodong Luo}
 \note{This provides a random number generator of the piecewise exponetial distribution with crossover}

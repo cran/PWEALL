@@ -41,7 +41,7 @@ rmstutil(tcut=2.0,tstudy=5.0,taur=5,u=c(1/taur,1/taur),ut=c(taur/2,taur),
   \item{vadd}{the additional variance term of \code{rmst}}
 }
 \references{
-Luo, et al. (2017)
+Luo et al. (2018) Design and monitoring of survival trials in complex scenarios, Statistics in Medicine <doi: https://doi.org/10.1002/sim.7975>.
 }
 \author{Xiaodong Luo}
 \note{This calculates the "true" variance of restricted mean survival times}

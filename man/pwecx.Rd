@@ -14,7 +14,7 @@ pwecx(t=seq(0,10,by=0.5),rate1=c(1,0.5),rate2=rate1,rate3=c(0.7,0.4),
   \item{rate4}{additional piecewise constant event rate for more complex crossover}
   \item{rate5}{additional piecewise constant event rate for more complex crossover}
   \item{tchange}{a strictly increasing sequence of time points starting from zero at which event rate changes. The first element of tchange must be zero. The above rates \code{rate1} to \code{rate5} and tchange must have the same length.}
-  \item{type}{type of crossover, i.e. markov, semi-markov and hybrid}
+  \item{type}{type of crossover, i.e. 1: markov, 2: semi-markov, 3: hybrid case 1(as indicated in the reference), 4: hybrid case 2, 5: hybrid case 3.}
   \item{rp2}{re-randomization prob}
   \item{eps}{tolerance}
 }
@@ -26,7 +26,7 @@ pwecx(t=seq(0,10,by=0.5),rate1=c(1,0.5),rate2=rate1,rate3=c(0.7,0.4),
        \item{surv}{Survival function}
 }
 \references{
-Luo, et al. (2017)
+Luo et al. (2018) Design and monitoring of survival trials in complex scenarios, Statistics in Medicine <doi: https://doi.org/10.1002/sim.7975>.
 }
 \author{Xiaodong Luo}
 \note{This provides a random number generator of the piecewise exponetial distribution with crossover}

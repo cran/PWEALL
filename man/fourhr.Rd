@@ -15,14 +15,14 @@ fourhr(t=seq(0,5,by=0.5),rate1=c(0,5,0.8),rate2=rate1,
   \item{tchange}{a strictly increasing sequence of time points starting from zero at which event rate changes. The first element of tchange must be zero. The above rates and tchange must have the same length.}
   \item{eps}{tolerance}
 }
-\details{Let \eqn{\lambda_1,\ldots,\lambda_4} correspond to \code{rate1},...,\code{rate4}.
+\details{Let \eqn{h_1,\ldots,h_4} correspond to \code{rate1},...,\code{rate4}, and \eqn{H_1,\ldots,H_4} be the corresponding survival functions. 
 We calculate
-\deqn{\int_0^t \lambda_1(s)S_2(s)\lambda_3(t-s)S_4(t-s)ds}
+\deqn{\int_0^t h_1(s)H_2(s)h_3(t-s)H_4(t-s)ds.}
 }
 \value{\item{fx}{values}
 }
 \references{
-Luo, et al. (2017)
+Luo et al. (2018) Design and monitoring of survival trials in complex scenarios, Statistics in Medicine <doi: https://doi.org/10.1002/sim.7975>.
 }
 \author{Xiaodong Luo}
 \note{This provides the result of the complex integration}
