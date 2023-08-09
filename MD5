@@ -1,4 +1,4 @@
-2d4cfb5a260a0d0d16bf98393cba6c9b *DESCRIPTION
+3db9b7bd66643429868f457001b1acdf *DESCRIPTION
 5406825e0ead072a83d70a8e1fb821cf *NAMESPACE
 5dc789359125af1b6c7a2870bc9f5bd2 *R/cp.R
 78e39f87faadc81fba4e19bda9c0e925 *R/cpboundary.R
@@ -42,7 +42,7 @@ b151b95d87296c34bdb1a5cbe2eb6f4b *R/spf.R
 9c0ee9db65b569739e6c1706f9a783e6 *R/wlrcal.R
 fa705f26798deca120c73657573914ec *R/wlrcom.R
 d1ad5927de0bab4582ea5186a00880aa *R/wlrutil.R
-9875c4d7aa799a632a3363b8ea10a16b *build/partial.rdb
+91a9ce70bea03ca088202c9c8ebe8c48 *build/partial.rdb
 cb325675c9549c7353ae00a1e7954af3 *man/PWEALL2-package.Rd
 62ddcea21f3ece4aa622ed3040557728 *man/cp.Rd
 97a9bf3b29ae4a2db8dc0d276570cecd *man/cpboundary.Rd
@@ -86,4 +86,4 @@ afce99856885306a821a9d83487f795f *man/rpwe.Rd
 f4756135b87809b2bc57fb9e2b15d0b4 *man/wlrcal.Rd
 5c2c8a93394135c6a469171a41345076 *man/wlrcom.Rd
 6fa463f0d641236285cbb74d0aa6e957 *man/wlrutil.Rd
-9e73bb6611531e9716360f4f04f2af70 *src/PWEALL.f90
+e6143e984112927878d9b07f94d1717c *src/PWEALL.f90
